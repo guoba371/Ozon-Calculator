@@ -4,6 +4,13 @@ function buildPlanKey(plan) {
   return [plan.carrier, plan.product, plan.speed].join('|')
 }
 
+function pickDefaultPlan(plans) {
+  if (!plans || !plans.length) {
+    return null
+  }
+  return plans.find((plan) => plan.carrier === 'E邮宝') || plans[0]
+}
+
 Page({
   data: {
     input: calculator.getDefaultInput(),
@@ -63,14 +70,15 @@ Page({
     let result = calculator.calculate(input)
     let selectedPlanKey = this.data.selectedPlanKey
     if (this.isTargetProfitEnabled(input) && !selectedPlanKey) {
-      selectedPlanKey = result.plans[0] ? buildPlanKey(result.plans[0]) : ''
+      const defaultPlan = pickDefaultPlan(result.plans)
+      selectedPlanKey = defaultPlan ? buildPlanKey(defaultPlan) : ''
     }
     let selectedPlan =
-      result.plans.find((plan) => buildPlanKey(plan) === selectedPlanKey) || result.plans[0] || null
+      result.plans.find((plan) => buildPlanKey(plan) === selectedPlanKey) || pickDefaultPlan(result.plans)
     if (selectedPlan && calculator.applyTargetPricingToInput(input, selectedPlan)) {
       result = calculator.calculate(input)
       selectedPlan =
-        result.plans.find((plan) => buildPlanKey(plan) === selectedPlanKey) || result.plans[0] || null
+        result.plans.find((plan) => buildPlanKey(plan) === selectedPlanKey) || pickDefaultPlan(result.plans)
     }
     const plans = result.plans.map((plan) => ({
       ...plan,
@@ -86,7 +94,7 @@ Page({
         : ''
     }))
     selectedPlan =
-      plans.find((plan) => plan.planKey === selectedPlanKey) || plans[0] || null
+      plans.find((plan) => plan.planKey === selectedPlanKey) || pickDefaultPlan(plans)
     const analysisCards = [
       {
         label: '体积重',
