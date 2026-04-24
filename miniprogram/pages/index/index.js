@@ -52,7 +52,12 @@ Page({
       shippingCostText: plan.shippingCost.toFixed(2),
       totalCostText: plan.totalCost.toFixed(2),
       profitText: plan.profit.toFixed(2),
-      profitRateText: plan.profitRate.toFixed(2)
+      profitRateText: plan.profitRate.toFixed(2),
+      targetPricingText: plan.targetPricing
+        ? plan.targetPricing.feasible === false
+          ? `反推售价失败：${plan.targetPricing.reason}`
+          : `目标利润率 ${Number(plan.targetPricing.targetProfitRate || 0).toFixed(2)}% 时，建议售价 ${this.data.input.currency} ${Number(plan.targetPricing.requiredSellingFX || 0).toFixed(2)}`
+        : ''
     }))
     const selectedPlan =
       plans.find((plan) => plan.planKey === this.data.selectedPlanKey) || plans[0] || null
@@ -121,15 +126,22 @@ Page({
       'exchangeRate',
       'goodsValueRUB',
       'shippingShareRate',
+      'targetProfitRate',
       'commissionRate',
       'commissionAmount',
       'advertisingValue',
       'operationFee'
     ]
+    const parsedValue =
+      numericFields.includes(field)
+        ? value === ''
+          ? null
+          : Number(value || 0)
+        : value
     this.setData({
       input: {
         ...this.data.input,
-        [field]: numericFields.includes(field) ? Number(value || 0) : value
+        [field]: parsedValue
       }
     })
     this.calculateAndRender()
