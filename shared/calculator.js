@@ -860,6 +860,16 @@
     return ranked;
   }
 
+  function pickDefaultPlan(plans) {
+    if (!plans || !plans.length) {
+      return null;
+    }
+    var eYouBao = plans.find(function (plan) {
+      return plan.carrier === "E邮宝";
+    });
+    return eYouBao || plans[0];
+  }
+
   function calculate(rawInput) {
     var summary = summarizeInput(rawInput);
     var plans = [];
@@ -920,7 +930,7 @@
     return {
       summary: summary,
       plans: plans,
-      bestPlan: plans[0] || null,
+      bestPlan: pickDefaultPlan(plans),
       meta: {
         unsupportedCarriers: UNSUPPORTED_CARRIERS,
         assumptions: [
