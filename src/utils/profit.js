@@ -1,12 +1,15 @@
 /**
  * 利润计算核心
  *
- * 公式（PRD 2.4）：
- *   售价（元）  = 外币售价 × 汇率 × (1 - 运费分摊率)
- *   利润（元）  = 售价 − 货本 − 物流费 − 佣金 − 广告费 − 操作费
- *   利润率     = 利润 ÷ 售价 × 100%
+ * 当前口径：
+ *   成本（元）   = 货本 + 操作费 + 物流费
+ *   销售额（元） = 外币售价 × 汇率
+ *   利润（元）   = 销售额 − 佣金 − 成本
+ *   利润率      = 利润 ÷ 成本 × 100%
  *
- * 注意：当前版本「运费分摊率」默认为 0，由用户按需手动配置。
+ * 反推售价：
+ *   按比例佣金：售价 = (成本 + 目标利润) ÷ 汇率 ÷ (1 - 佣金率)
+ *   固定佣金：售价 = (成本 + 目标利润 + 固定佣金) ÷ 汇率
  */
 
 import { analyzeCargo } from './weight.js';
@@ -25,11 +28,9 @@ export function calcAll(input, options = {}) {
     input.weight
   );
 
-  // 售价（人民币）
-  const freightShareRate = Number(input.freightShareRate) || 0;
-  const rawSellingCNY =
+  // 销售额（人民币）
+  const sellingCNY =
     (Number(input.sellingPriceFX) || 0) * (Number(input.exchangeRate) || 0);
-  const sellingCNY = rawSellingCNY * (1 - freightShareRate);
 
   // 佣金：支持百分比或固定金额，用户二选一
   let commissionCNY;
@@ -43,7 +44,6 @@ export function calcAll(input, options = {}) {
   const fixed = {
     cost: Number(input.cost) || 0,
     commission: round2(commissionCNY),
-    advertising: Number(input.advertisingFee) || 0,
     operation: Number(input.operationFee) || 0,
   };
 
@@ -61,11 +61,9 @@ export function calcAll(input, options = {}) {
     const totalCost =
       fixed.cost +
       q.shippingCost +
-      fixed.commission +
-      fixed.advertising +
       fixed.operation;
-    const profit = sellingCNY - totalCost;
-    const profitRate = sellingCNY > 0 ? (profit / sellingCNY) * 100 : 0;
+    const profit = sellingCNY - fixed.commission - totalCost;
+    const profitRate = totalCost > 0 ? (profit / totalCost) * 100 : 0;
     const targetPricing = calcTargetPricing({
       shippingCost: q.shippingCost,
       input,
@@ -77,7 +75,6 @@ export function calcAll(input, options = {}) {
         cost: fixed.cost,
         shipping: q.shippingCost,
         commission: fixed.commission,
-        advertising: fixed.advertising,
         operation: fixed.operation,
       },
       totalCost: round2(totalCost),
@@ -95,7 +92,6 @@ export function calcAll(input, options = {}) {
   return {
     cargo,
     sellingCNY: round2(sellingCNY),
-    rawSellingCNY: round2(rawSellingCNY),
     fixed,
     plans,
   };
@@ -197,18 +193,14 @@ function calcTargetPricing({ shippingCost, input, fixed }) {
 
   const targetRate = (Number(targetRateRaw) || 0) / 100;
   const exchangeRate = Number(input.exchangeRate) || 0;
-  const freightShareRate = Number(input.freightShareRate) || 0;
   const fixedBase =
     (fixed.cost || 0) +
     (shippingCost || 0) +
-    (fixed.advertising || 0) +
     (fixed.operation || 0);
+  const targetProfit = fixedBase * targetRate;
 
   if (exchangeRate <= 0) {
     return { feasible: false, reason: '汇率需大于 0' };
-  }
-  if (freightShareRate >= 1) {
-    return { feasible: false, reason: '运费分摊率需小于 100%' };
   }
 
   let requiredSellingCNY = 0;
@@ -216,29 +208,24 @@ function calcTargetPricing({ shippingCost, input, fixed }) {
 
   if (input.commissionMode === 'amount') {
     requiredCommission = Number(input.commissionAmount) || 0;
-    const denominator = 1 - targetRate;
-    if (denominator <= 0) {
-      return { feasible: false, reason: '目标利润率过高，无法反推售价' };
-    }
-    requiredSellingCNY = (fixedBase + requiredCommission) / denominator;
+    requiredSellingCNY = fixedBase + targetProfit + requiredCommission;
   } else {
     const commissionRate = (Number(input.commissionRate) || 0) / 100;
-    const denominator = 1 - commissionRate - targetRate;
+    const denominator = 1 - commissionRate;
     if (denominator <= 0) {
-      return { feasible: false, reason: '佣金率与目标利润率之和过高，无法反推售价' };
+      return { feasible: false, reason: '佣金率需小于 100%' };
     }
-    requiredSellingCNY = fixedBase / denominator;
+    requiredSellingCNY = (fixedBase + targetProfit) / denominator;
     requiredCommission = requiredSellingCNY * commissionRate;
   }
 
-  const rawSellingCNY = requiredSellingCNY / (1 - freightShareRate);
-  const requiredSellingFX = rawSellingCNY / exchangeRate;
+  const requiredSellingFX = requiredSellingCNY / exchangeRate;
 
   return {
     feasible: Number.isFinite(requiredSellingFX) && Number.isFinite(requiredSellingCNY),
     targetProfitRate: round2(targetRate * 100),
     requiredSellingCNY: round2(requiredSellingCNY),
-    requiredRawSellingCNY: round2(rawSellingCNY),
+    targetProfit: round2(targetProfit),
     requiredSellingFX: round2(requiredSellingFX),
     requiredCommission: round2(requiredCommission),
   };
