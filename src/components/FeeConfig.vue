@@ -113,6 +113,9 @@
         <text class="suffix">元</text>
       </view>
     </view>
+    <view class="form-hint">
+      当前新版利润公式暂不计入广告费，仅保留字段备用。
+    </view>
 
     <!-- 操作费 -->
     <view class="form-row">
@@ -145,6 +148,9 @@
         />
         <text class="suffix">× 售价</text>
       </view>
+    </view>
+    <view class="form-hint">
+      当前新版利润公式暂不计入运费分摊，仅保留字段备用。
     </view>
   </view>
 </template>
