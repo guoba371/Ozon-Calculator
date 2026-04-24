@@ -127,6 +127,29 @@
     }
   }
 
+  function isTargetProfitEnabled() {
+    return state.input.targetProfitRate !== null && state.input.targetProfitRate !== undefined && state.input.targetProfitRate !== ''
+  }
+
+  function syncAutoGoodsValue() {
+    if (state.input.goodsValueCustomized) {
+      return false
+    }
+    var nextValue = calculator.computeAutoGoodsValueRUB(state.input)
+    if (nextValue == null) {
+      if (state.input.goodsValueRUB == null || state.input.goodsValueRUB === 0) {
+        return false
+      }
+      state.input.goodsValueRUB = null
+      return true
+    }
+    if (Math.abs(Number(state.input.goodsValueRUB || 0) - nextValue) < 0.01) {
+      return false
+    }
+    state.input.goodsValueRUB = nextValue
+    return true
+  }
+
   function applyInputToForm() {
     Array.prototype.forEach.call(form.elements, function (element) {
       if (!element.name || !(element.name in state.input)) {
@@ -164,10 +187,40 @@
     var isAmount = state.input.commissionInputMode === 'amount'
     rateField.style.display = isAmount ? 'none' : ''
     amountField.style.display = isAmount ? '' : 'none'
+    var sellingPriceInput = form.elements.namedItem('sellingPriceFX')
+    if (sellingPriceInput) {
+      sellingPriceInput.disabled = isTargetProfitEnabled()
+    }
+  }
+
+  function syncTargetSellingPrice() {
+    if (!isTargetProfitEnabled() || !state.result || !state.result.plans.length) {
+      return false
+    }
+    if (!state.selectedPlanKey) {
+      var initialPlan = getSelectedPlan()
+      if (initialPlan) {
+        state.selectedPlanKey = buildPlanKey(initialPlan)
+      }
+    }
+    var plan = getSelectedPlan()
+    if (!plan) {
+      return false
+    }
+    return calculator.applyTargetPricingToInput(state.input, plan)
   }
 
   function calculateAndRender() {
+    var inputChanged = syncAutoGoodsValue()
     state.result = calculator.calculate(state.input)
+    if (syncTargetSellingPrice()) {
+      inputChanged = true
+      syncAutoGoodsValue()
+      state.result = calculator.calculate(state.input)
+    }
+    if (inputChanged) {
+      applyInputToForm()
+    }
     saveDraft()
     renderAssumptions()
     renderAnalysis()
@@ -402,6 +455,10 @@
       readInputFromForm()
     }
 
+    if (name === 'goodsValueRUB') {
+      state.input.goodsValueCustomized = event.target.value !== ''
+    }
+
     if (name === 'commissionPreset' || name === 'salesMode') {
       readInputFromForm()
       applyPresetRate()
@@ -434,6 +491,10 @@
       return
     }
     state.selectedPlanKey = row.dataset.planKey
+    if (isTargetProfitEnabled()) {
+      calculateAndRender()
+      return
+    }
     renderPlans()
     renderSummary()
   }
@@ -564,7 +625,9 @@
 
   function handleCalculate() {
     readInputFromForm()
-    state.selectedPlanKey = ''
+    if (!isTargetProfitEnabled()) {
+      state.selectedPlanKey = ''
+    }
     calculateAndRender()
     var resultSection = document.getElementById('result-section')
     if (resultSection && typeof resultSection.scrollIntoView === 'function') {
