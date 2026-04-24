@@ -50,7 +50,7 @@
       </view>
       <view class="field">
         <text class="field-label">外币售价</text>
-        <input class="input" type="digit" value="{{input.sellingPriceFX}}" data-field="sellingPriceFX" bindinput="handleTextInput" />
+        <input class="input" type="digit" value="{{input.sellingPriceFX}}" data-field="sellingPriceFX" bindinput="handleTextInput" disabled="{{input.targetProfitRate !== null}}" />
       </view>
       <view class="field">
         <text class="field-label">汇率</text>
@@ -61,7 +61,7 @@
         <input class="input" type="digit" value="{{input.targetProfitRate}}" data-field="targetProfitRate" bindinput="handleTextInput" />
       </view>
       <view class="field">
-        <text class="field-label">货值（RUB）</text>
+        <text class="field-label">货值（RUB，默认按货本折算）</text>
         <input class="input" type="digit" value="{{input.goodsValueRUB}}" data-field="goodsValueRUB" bindinput="handleTextInput" />
       </view>
       <view class="field">
