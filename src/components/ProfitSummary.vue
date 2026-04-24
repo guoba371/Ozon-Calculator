@@ -41,12 +41,6 @@
           <text v-if="showLabel(plan.breakdown.commission)" class="bar-lbl">佣金</text>
         </view>
         <view
-          class="bar-seg ads"
-          :style="{ flexGrow: Math.max(plan.breakdown.advertising, 0.01) }"
-        >
-          <text v-if="showLabel(plan.breakdown.advertising)" class="bar-lbl">广告</text>
-        </view>
-        <view
           class="bar-seg ops"
           :style="{ flexGrow: plan.breakdown.operation }"
         >
@@ -71,11 +65,6 @@
           <text class="bd-num">¥{{ money(plan.breakdown.commission) }}</text>
         </view>
         <view class="bd-row">
-          <view class="bd-dot ads"></view>
-          <text class="bd-name">广告费</text>
-          <text class="bd-num">¥{{ money(plan.breakdown.advertising) }}</text>
-        </view>
-        <view class="bd-row">
           <view class="bd-dot ops"></view>
           <text class="bd-name">操作费</text>
           <text class="bd-num">¥{{ money(plan.breakdown.operation) }}</text>
@@ -84,6 +73,10 @@
         <view class="bd-row total">
           <text class="bd-name">总成本</text>
           <text class="bd-num">¥{{ money(plan.totalCost) }}</text>
+        </view>
+        <view class="bd-row">
+          <text class="bd-name">佣金后利润</text>
+          <text class="bd-num">¥{{ money(plan.profit) }}</text>
         </view>
         <view class="bd-row">
           <text class="bd-name">销售收入</text>
@@ -206,9 +199,6 @@ function showLabel(v) {
   }
   &.commission {
     background: #f59e0b;
-  }
-  &.ads {
-    background: #a78bfa;
   }
   &.ops {
     background: #6b7280;
