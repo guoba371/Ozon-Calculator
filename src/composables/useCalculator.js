@@ -1,5 +1,5 @@
 import { reactive, computed, watch, ref } from 'vue';
-import { calcAll } from '../utils/profit.js';
+import { calcAll, calcAutoGoodsValueRUB } from '../utils/profit.js';
 import { CURRENCIES, getReferenceCommissionRate } from '../data/commissions.js';
 import {
   loadFormDraft,
@@ -74,12 +74,12 @@ export function useCalculator() {
     }
   );
 
-  // 售价币种为卢布时，自动同步货值
+  // 未手动锁定时，货值默认按货本折算为卢布
   watch(
-    () => [form.sellingPriceFX, form.currency, form.goodsValueCustomized],
-    ([price, cur, customized]) => {
-      if (cur === 'RUB' && !customized) {
-        form.goodsValueRUB = price || null;
+    () => [form.cost, form.currency, form.exchangeRate, form.goodsValueCustomized],
+    ([, , , customized]) => {
+      if (!customized) {
+        form.goodsValueRUB = calcAutoGoodsValueRUB(form);
       }
     }
   );
