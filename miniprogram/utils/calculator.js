@@ -314,6 +314,7 @@
     width: 30,
     height: 20,
     sellingPriceFX: 5284,
+    targetProfitRate: null,
     currency: "RUB",
     exchangeRate: 0.076,
     shippingShareRate: 0,
@@ -490,6 +491,10 @@
     var profitRate = summary.sellingPriceCNY > 0
       ? round((profit / summary.sellingPriceCNY) * 100, 2)
       : 0;
+    var targetPricing = computeTargetPricing({
+      shippingCost: shippingCost,
+      summary: summary
+    });
 
     return {
       carrier: carrierName,
@@ -501,10 +506,68 @@
       totalCost: totalCost,
       profit: profit,
       profitRate: profitRate,
+      targetPricing: targetPricing,
       transitScore: parseTransitDays(option.transitDays),
       isRecommended: false,
       warningMessage: option.warningMessage || "",
       assumptions: option.assumptions || []
+    };
+  }
+
+  function computeTargetPricing(context) {
+    var summary = context.summary;
+    var input = summary.input || {};
+    if (input.targetProfitRate === null || input.targetProfitRate === undefined || input.targetProfitRate === "") {
+      return null;
+    }
+
+    var targetRate = toNumber(input.targetProfitRate) / 100;
+    var exchangeRate = toNumber(input.exchangeRate);
+    var shareRate = Math.min(Math.max(toNumber(input.shippingShareRate), 0), 100) / 100;
+    var fixedBase =
+      summary.cost +
+      context.shippingCost +
+      summary.advertisingFee +
+      summary.operationFee;
+
+    if (exchangeRate <= 0) {
+      return { feasible: false, reason: "汇率需大于 0" };
+    }
+
+    if (shareRate >= 1) {
+      return { feasible: false, reason: "运费分摊率需小于 100%" };
+    }
+
+    var requiredSellingCNY = 0;
+    var requiredCommission = 0;
+
+    if ((input.commissionInputMode || "rate") === "amount") {
+      requiredCommission = round(toNumber(input.commissionAmount), 2);
+      var denominatorAmount = 1 - targetRate;
+      if (denominatorAmount <= 0) {
+        return { feasible: false, reason: "目标利润率过高，无法反推售价" };
+      }
+      requiredSellingCNY = (fixedBase + requiredCommission) / denominatorAmount;
+    } else {
+      var commissionRate = toNumber(input.commissionRate) / 100;
+      var denominatorRate = 1 - commissionRate - targetRate;
+      if (denominatorRate <= 0) {
+        return { feasible: false, reason: "佣金率与目标利润率之和过高，无法反推售价" };
+      }
+      requiredSellingCNY = fixedBase / denominatorRate;
+      requiredCommission = requiredSellingCNY * commissionRate;
+    }
+
+    var requiredRawSellingCNY = requiredSellingCNY / (1 - shareRate);
+    var requiredSellingFX = requiredRawSellingCNY / exchangeRate;
+
+    return {
+      feasible: true,
+      targetProfitRate: round(targetRate * 100, 2),
+      requiredSellingCNY: round(requiredSellingCNY, 2),
+      requiredRawSellingCNY: round(requiredRawSellingCNY, 2),
+      requiredSellingFX: round(requiredSellingFX, 2),
+      requiredCommission: round(requiredCommission, 2)
     };
   }
 
