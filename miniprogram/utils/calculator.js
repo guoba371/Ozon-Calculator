@@ -490,8 +490,7 @@
     var shippingCost = round(option.shippingCost, 2);
     var totalCost = round(
       summary.cost +
-      shippingCost +
-      summary.operationFee,
+      shippingCost,
       2
     );
     var profit = round(summary.sellingPriceCNY - summary.commissionFee - totalCost, 2);
@@ -532,8 +531,7 @@
     var exchangeRate = toNumber(input.exchangeRate);
     var fixedBase =
       summary.cost +
-      context.shippingCost +
-      summary.operationFee;
+      context.shippingCost;
     var targetProfit = fixedBase * targetRate;
 
     if (exchangeRate <= 0) {
