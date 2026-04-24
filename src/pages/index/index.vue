@@ -49,6 +49,7 @@
             :plans="result.plans"
             :selected-key="selectedKey"
             :speed-filter="speedFilter"
+            :currency="form.currency"
             @select="onSelectPlan"
             @filter-change="speedFilter = $event"
           />
@@ -56,6 +57,8 @@
           <ProfitSummary
             :plan="selectedPlan"
             :selling-c-n-y="result.sellingCNY"
+            :currency="form.currency"
+            :target-profit-rate="form.targetProfitRate"
           />
         </view>
       </view>
