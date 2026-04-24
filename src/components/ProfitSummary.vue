@@ -89,6 +89,18 @@
           <text class="bd-name">销售收入</text>
           <text class="bd-num">¥{{ money(sellingCNY) }}</text>
         </view>
+        <view
+          v-if="plan.targetPricing"
+          :class="['bd-row', 'target-price', { invalid: plan.targetPricing.feasible === false }]"
+        >
+          <text class="bd-name">
+            目标利润率 {{ percent(plan.targetPricing.targetProfitRate || targetProfitRate) }}
+          </text>
+          <text v-if="plan.targetPricing.feasible !== false" class="bd-num">
+            {{ currency }} {{ money(plan.targetPricing.requiredSellingFX) }}
+          </text>
+          <text v-else class="bd-num">{{ plan.targetPricing.reason }}</text>
+        </view>
       </view>
     </view>
   </view>
@@ -100,6 +112,8 @@ import { money, percent } from '../utils/format.js';
 defineProps({
   plan: { type: Object, default: null },
   sellingCNY: { type: Number, default: 0 },
+  currency: { type: String, default: 'RUB' },
+  targetProfitRate: { type: Number, default: null },
 });
 
 function profitCls(v) {
@@ -227,6 +241,17 @@ function showLabel(v) {
     margin-top: 6rpx;
     font-weight: 700;
     color: #1f2937;
+  }
+}
+
+.target-price {
+  border-top: 1rpx dashed #e5e7eb;
+  padding-top: 12rpx;
+  margin-top: 6rpx;
+
+  &.invalid .bd-name,
+  &.invalid .bd-num {
+    color: #b45309;
   }
 }
 
