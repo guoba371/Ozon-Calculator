@@ -85,6 +85,20 @@
           </view>
         </view>
 
+        <view
+          v-if="p.targetPricing"
+          :class="['target-pricing', { invalid: p.targetPricing.feasible === false }]"
+        >
+          <text v-if="p.targetPricing.feasible !== false">
+            目标利润率 {{ percent(p.targetPricing.targetProfitRate) }} 时，建议售价
+            {{ currency }} {{ money(p.targetPricing.requiredSellingFX) }}
+            （约 ¥{{ money(p.targetPricing.requiredRawSellingCNY) }}）
+          </text>
+          <text v-else>
+            无法反推售价：{{ p.targetPricing.reason }}
+          </text>
+        </view>
+
         <view v-if="p.warnings?.length" class="warn-list">
           <view
             v-for="(w, i) in p.warnings"
@@ -108,6 +122,7 @@ const props = defineProps({
   plans: { type: Array, default: () => [] },
   selectedKey: { type: String, default: '' },
   speedFilter: { type: String, default: '' },
+  currency: { type: String, default: 'RUB' },
 });
 defineEmits(['select', 'filterChange']);
 
@@ -293,6 +308,21 @@ function profitCls(v) {
   }
   &.negative {
     color: #ef4444;
+  }
+}
+
+.target-pricing {
+  margin-top: 12rpx;
+  padding: 12rpx 16rpx;
+  border-radius: 10rpx;
+  background: #eef6ff;
+  color: #1e5fa8;
+  font-size: 22rpx;
+  line-height: 1.6;
+
+  &.invalid {
+    background: #fff7ed;
+    color: #b45309;
   }
 }
 
