@@ -151,6 +151,10 @@
     ;['cost', 'weight', 'length', 'width', 'height', 'sellingPriceFX', 'exchangeRate', 'shippingShareRate', 'commissionRate', 'commissionAmount', 'advertisingValue', 'operationFee', 'goodsValueRUB'].forEach(function (key) {
       nextInput[key] = Number(nextInput[key] || 0)
     })
+    nextInput.targetProfitRate =
+      nextInput.targetProfitRate === '' || nextInput.targetProfitRate == null
+        ? null
+        : Number(nextInput.targetProfitRate)
     state.input = nextInput
   }
 
@@ -262,6 +266,17 @@
       { name: '平台佣金', value: formatMoney(summary.commissionFee) }
     ]
 
+    if (plan.targetPricing) {
+      metrics.push(
+        plan.targetPricing.feasible === false
+          ? { name: '反推售价', value: plan.targetPricing.reason, tone: 'value-negative' }
+          : {
+              name: '目标售价',
+              value: state.input.currency + ' ' + Number(plan.targetPricing.requiredSellingFX || 0).toFixed(2)
+            }
+      )
+    }
+
     summaryMetrics.innerHTML = metrics
       .map(function (metric) {
         return (
@@ -301,6 +316,13 @@
         var warning = plan.warningMessage
           ? '<span class="warning-copy">' + escapeHtml(plan.warningMessage) + '</span>'
           : ''
+        var targetPricing = plan.targetPricing
+          ? (
+            plan.targetPricing.feasible === false
+              ? '<span class="warning-copy">' + escapeHtml('反推售价失败：' + plan.targetPricing.reason) + '</span>'
+              : '<span class="warning-copy">' + escapeHtml('目标利润率 ' + formatPercent(plan.targetPricing.targetProfitRate) + ' 时，建议售价 ' + state.input.currency + ' ' + Number(plan.targetPricing.requiredSellingFX || 0).toFixed(2) + '（约 ¥' + Number(plan.targetPricing.requiredRawSellingCNY || 0).toFixed(2) + '）') + '</span>'
+          )
+          : ''
 
         return (
           '<tr class="' +
@@ -314,6 +336,7 @@
           tags +
           '</div>' +
           warning +
+          targetPricing +
           '</div></td>' +
           '<td>' +
           escapeHtml(plan.product) +
