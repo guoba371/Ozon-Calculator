@@ -44,6 +44,27 @@
     </view>
 
     <view class="form-row">
+      <text class="label">
+        目标利润率
+        <text class="label-hint">用于反推建议售价</text>
+      </text>
+      <view class="input-suffix">
+        <input
+          class="input"
+          type="digit"
+          :value="form.targetProfitRate"
+          @input="form.targetProfitRate = toNum($event)"
+          placeholder="如 20"
+        />
+        <text class="suffix">%</text>
+      </view>
+    </view>
+
+    <view v-if="form.targetProfitRate !== null" class="form-hint">
+      已开启目标利润率反推，系统会为每个物流方案计算所需售价。
+    </view>
+
+    <view class="form-row">
       <text class="label">目的地</text>
       <view class="segmented">
         <view
