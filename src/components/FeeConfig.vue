@@ -131,6 +131,9 @@
         <text class="suffix">元</text>
       </view>
     </view>
+    <view class="form-hint">
+      当前新版利润公式暂不计入操作费，仅保留字段备用。
+    </view>
 
     <!-- 运费分摊率（高级选项） -->
     <view class="form-row">
