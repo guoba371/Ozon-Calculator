@@ -44,8 +44,34 @@ Page({
     this.setData({ input })
   },
 
+  isTargetProfitEnabled(input = this.data.input) {
+    return input.targetProfitRate !== null && input.targetProfitRate !== undefined && input.targetProfitRate !== ''
+  },
+
+  syncAutoGoodsValue(input) {
+    if (input.goodsValueCustomized) {
+      return input
+    }
+    return {
+      ...input,
+      goodsValueRUB: calculator.computeAutoGoodsValueRUB(input)
+    }
+  },
+
   calculateAndRender() {
-    const result = calculator.calculate(this.data.input)
+    let input = this.syncAutoGoodsValue({ ...this.data.input })
+    let result = calculator.calculate(input)
+    let selectedPlanKey = this.data.selectedPlanKey
+    if (this.isTargetProfitEnabled(input) && !selectedPlanKey) {
+      selectedPlanKey = result.plans[0] ? buildPlanKey(result.plans[0]) : ''
+    }
+    let selectedPlan =
+      result.plans.find((plan) => buildPlanKey(plan) === selectedPlanKey) || result.plans[0] || null
+    if (selectedPlan && calculator.applyTargetPricingToInput(input, selectedPlan)) {
+      result = calculator.calculate(input)
+      selectedPlan =
+        result.plans.find((plan) => buildPlanKey(plan) === selectedPlanKey) || result.plans[0] || null
+    }
     const plans = result.plans.map((plan) => ({
       ...plan,
       planKey: buildPlanKey(plan),
@@ -59,8 +85,8 @@ Page({
           : `目标利润率 ${Number(plan.targetPricing.targetProfitRate || 0).toFixed(2)}% 时，建议售价 ${this.data.input.currency} ${Number(plan.targetPricing.requiredSellingFX || 0).toFixed(2)}`
         : ''
     }))
-    const selectedPlan =
-      plans.find((plan) => plan.planKey === this.data.selectedPlanKey) || plans[0] || null
+    selectedPlan =
+      plans.find((plan) => plan.planKey === selectedPlanKey) || plans[0] || null
     const analysisCards = [
       {
         label: '体积重',
@@ -89,10 +115,12 @@ Page({
     const presetLabel = preset ? preset.label : '请选择'
 
     this.setData({
+      input,
       result: {
         ...result,
         plans
       },
+      selectedPlanKey,
       selectedPlan,
       analysisCards,
       destinationLabel,
@@ -138,11 +166,15 @@ Page({
           ? null
           : Number(value || 0)
         : value
+    const nextInput = {
+      ...this.data.input,
+      [field]: parsedValue
+    }
+    if (field === 'goodsValueRUB') {
+      nextInput.goodsValueCustomized = value !== ''
+    }
     this.setData({
-      input: {
-        ...this.data.input,
-        [field]: parsedValue
-      }
+      input: nextInput
     })
     this.calculateAndRender()
   },
@@ -207,8 +239,9 @@ Page({
 
   handlePlanTap(event) {
     const { key } = event.currentTarget.dataset
-    this.setData({ selectedPlanKey: key })
-    this.calculateAndRender()
+    this.setData({ selectedPlanKey: key }, () => {
+      this.calculateAndRender()
+    })
   },
 
   saveRecord() {
@@ -229,8 +262,11 @@ Page({
   },
 
   startCalculate() {
-    this.setData({ selectedPlanKey: '' })
-    this.calculateAndRender()
+    this.setData({
+      selectedPlanKey: this.isTargetProfitEnabled() ? this.data.selectedPlanKey : ''
+    }, () => {
+      this.calculateAndRender()
+    })
     wx.pageScrollTo({
       selector: '#result-section',
       duration: 300
