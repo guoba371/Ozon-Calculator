@@ -457,8 +457,7 @@
   function computeSellingPriceCNY(input) {
     var price = toNumber(input.sellingPriceFX);
     var rate = toNumber(input.exchangeRate);
-    var shareRate = Math.min(Math.max(toNumber(input.shippingShareRate), 0), 100);
-    return round(price * rate * (1 - shareRate / 100), 2);
+    return round(price * rate, 2);
   }
 
   function computeAutoGoodsValueRUB(input) {
@@ -492,14 +491,12 @@
     var totalCost = round(
       summary.cost +
       shippingCost +
-      summary.commissionFee +
-      summary.advertisingFee +
       summary.operationFee,
       2
     );
-    var profit = round(summary.sellingPriceCNY - totalCost, 2);
-    var profitRate = summary.sellingPriceCNY > 0
-      ? round((profit / summary.sellingPriceCNY) * 100, 2)
+    var profit = round(summary.sellingPriceCNY - summary.commissionFee - totalCost, 2);
+    var profitRate = totalCost > 0
+      ? round((profit / totalCost) * 100, 2)
       : 0;
     var targetPricing = computeTargetPricing({
       shippingCost: shippingCost,
@@ -533,70 +530,41 @@
 
     var targetRate = toNumber(input.targetProfitRate) / 100;
     var exchangeRate = toNumber(input.exchangeRate);
-    var shareRate = Math.min(Math.max(toNumber(input.shippingShareRate), 0), 100) / 100;
-    var advertisingMode = input.advertisingMode || "fixed";
-    var advertisingRate = advertisingMode === "percent" ? toNumber(input.advertisingValue) / 100 : 0;
     var fixedBase =
       summary.cost +
       context.shippingCost +
       summary.operationFee;
-    var invalidReason = advertisingRate > 0
-      ? "佣金率、广告费率与目标利润率之和过高，无法反推售价"
-      : "佣金率与目标利润率之和过高，无法反推售价";
+    var targetProfit = fixedBase * targetRate;
 
     if (exchangeRate <= 0) {
       return { feasible: false, reason: "汇率需大于 0" };
     }
 
-    if (shareRate >= 1) {
-      return { feasible: false, reason: "运费分摊率需小于 100%" };
-    }
-
-    if (advertisingMode !== "percent") {
-      fixedBase += summary.advertisingFee;
-    }
-
     var requiredSellingCNY = 0;
     var requiredCommission = 0;
-    var requiredAdvertising = 0;
 
     if ((input.commissionInputMode || "rate") === "amount") {
       requiredCommission = round(toNumber(input.commissionAmount), 2);
-      var denominatorAmount = 1 - advertisingRate - targetRate;
-      if (denominatorAmount <= 0) {
-        return {
-          feasible: false,
-          reason: advertisingRate > 0
-            ? "广告费率与目标利润率之和过高，无法反推售价"
-            : "目标利润率过高，无法反推售价"
-        };
-      }
-      requiredSellingCNY = (fixedBase + requiredCommission) / denominatorAmount;
+      requiredSellingCNY = fixedBase + targetProfit + requiredCommission;
     } else {
       var commissionRate = toNumber(input.commissionRate) / 100;
-      var denominatorRate = 1 - commissionRate - advertisingRate - targetRate;
+      var denominatorRate = 1 - commissionRate;
       if (denominatorRate <= 0) {
-        return { feasible: false, reason: invalidReason };
+        return { feasible: false, reason: "佣金率需小于 100%" };
       }
-      requiredSellingCNY = fixedBase / denominatorRate;
+      requiredSellingCNY = (fixedBase + targetProfit) / denominatorRate;
       requiredCommission = requiredSellingCNY * commissionRate;
     }
 
-    requiredAdvertising = advertisingRate > 0
-      ? requiredSellingCNY * advertisingRate
-      : summary.advertisingFee;
-
-    var requiredRawSellingCNY = requiredSellingCNY / (1 - shareRate);
-    var requiredSellingFX = requiredRawSellingCNY / exchangeRate;
+    var requiredSellingFX = requiredSellingCNY / exchangeRate;
 
     return {
       feasible: true,
       targetProfitRate: round(targetRate * 100, 2),
       requiredSellingCNY: round(requiredSellingCNY, 2),
-      requiredRawSellingCNY: round(requiredRawSellingCNY, 2),
+      targetProfit: round(targetProfit, 2),
       requiredSellingFX: round(requiredSellingFX, 2),
-      requiredCommission: round(requiredCommission, 2),
-      requiredAdvertising: round(requiredAdvertising, 2)
+      requiredCommission: round(requiredCommission, 2)
     };
   }
 
