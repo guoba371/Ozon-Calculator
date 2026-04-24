@@ -101,19 +101,22 @@ const { form, result, reset, refreshRates } = useCalculator();
 const selectedKey = ref('');
 const speedFilter = ref('');
 
+function preferDefaultPlan(plans) {
+  if (!plans.length) return null;
+  const eyoubao = plans.find((p) => p.carrierName === 'E邮宝');
+  return eyoubao || plans[0];
+}
+
 // 默认选中"性价比推荐"或第一个方案
 const selectedPlan = computed(() => {
   if (!result.value.plans.length) return null;
   if (!selectedKey.value) {
-    const best = result.value.plans.find((p) =>
-      p.labels?.includes('best-value')
-    );
-    return best || result.value.plans[0];
+    return preferDefaultPlan(result.value.plans);
   }
   return (
     result.value.plans.find(
       (p) => p.carrierCode + p.speed === selectedKey.value
-    ) || result.value.plans[0]
+    ) || preferDefaultPlan(result.value.plans)
   );
 });
 
