@@ -250,6 +250,24 @@ async function main() {
   assert(celYFbpPlan, 'CEL Yandex FBP Express 存在');
   assert(Math.abs(celYFbpPlan.shippingCost - 65.44) < 0.01, `CEL Yandex FBP = ¥65.44，实际 ${celYFbpPlan?.shippingCost}`);
 
+  // 测试 14：设置目标利润率后，应能反推所需售价
+  const targetResult = calcAll({
+    ...sample,
+    targetProfitRate: 20,
+  });
+  const targetPlan = targetResult.plans.find(
+    (p) => p.carrierCode === 'CEL' && p.speed === 'Standard'
+  );
+  assert(targetPlan?.targetPricing?.feasible, '目标利润率反推售价可用');
+  assert(
+    Math.abs(targetPlan.targetPricing.requiredSellingCNY - 371.45) < 0.01,
+    `目标利润率 20% 时所需净售价 ≈ ¥371.45，实际 ${targetPlan?.targetPricing?.requiredSellingCNY}`
+  );
+  assert(
+    Math.abs(targetPlan.targetPricing.requiredSellingFX - 4887.45) < 0.02,
+    `目标利润率 20% 时所需卢布售价 ≈ 4887.45，实际 ${targetPlan?.targetPricing?.requiredSellingFX}`
+  );
+
   console.log('\n🎉 所有冒烟测试通过');
   console.log(`  - 计费重：${r.cargo.chargeableWeight}kg`);
   console.log(`  - 售价：¥${r.sellingCNY}`);
