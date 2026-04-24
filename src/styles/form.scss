@@ -1,0 +1,171 @@
+.card {
+  background: #ffffff;
+  border-radius: 24rpx;
+  padding: 32rpx;
+  margin-bottom: 24rpx;
+  box-shadow: 0 4rpx 20rpx rgba(30, 95, 168, 0.06);
+}
+
+.card-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 24rpx;
+  padding-bottom: 20rpx;
+  border-bottom: 1rpx solid #f0f2f5;
+}
+
+.card-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1e5fa8;
+}
+
+.card-hint {
+  font-size: 24rpx;
+  color: #9ca3af;
+}
+
+.form-row {
+  margin-bottom: 20rpx;
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  font-size: 26rpx;
+  color: #4b5563;
+  margin-bottom: 12rpx;
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.label-hint {
+  font-size: 22rpx;
+  color: #9ca3af;
+  font-weight: normal;
+}
+
+.required {
+  color: #ef4444;
+  font-weight: bold;
+}
+
+.input {
+  flex: 1;
+  border: 1rpx solid #e5e7eb;
+  border-radius: 12rpx;
+  background: #f9fafb;
+  padding: 18rpx 20rpx;
+  font-size: 28rpx;
+  color: #1f2937;
+  transition: all 0.2s;
+}
+
+.input:focus {
+  border-color: #1e5fa8;
+  background: #ffffff;
+}
+
+.input-suffix {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.suffix {
+  font-size: 26rpx;
+  color: #6b7280;
+  min-width: 64rpx;
+}
+
+.size-group {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.size-input {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+}
+
+.size-x {
+  color: #9ca3af;
+  font-size: 28rpx;
+  padding: 0 4rpx;
+}
+
+.picker {
+  background: #eef4fb;
+  border-radius: 12rpx;
+  padding: 0 16rpx;
+  line-height: 68rpx;
+  color: #1e5fa8;
+  font-weight: 500;
+  min-width: 140rpx;
+
+  &.full {
+    flex: 1;
+  }
+}
+
+.picker-value {
+  line-height: 68rpx;
+  text-align: center;
+  font-size: 26rpx;
+
+  &.full {
+    background: #f9fafb;
+    border: 1rpx solid #e5e7eb;
+    border-radius: 12rpx;
+    padding: 0 20rpx;
+    color: #1f2937;
+  }
+}
+
+.picker-arrow {
+  font-size: 20rpx;
+  margin-left: 6rpx;
+  color: #9ca3af;
+}
+
+.segmented {
+  display: flex;
+  background: #f3f4f6;
+  border-radius: 12rpx;
+  padding: 6rpx;
+  gap: 6rpx;
+}
+
+.seg-item {
+  flex: 1;
+  text-align: center;
+  padding: 14rpx 8rpx;
+  font-size: 26rpx;
+  color: #6b7280;
+  border-radius: 8rpx;
+  transition: all 0.15s;
+  cursor: pointer;
+}
+
+.seg-item.active {
+  background: #ffffff;
+  color: #1e5fa8;
+  font-weight: 600;
+  box-shadow: 0 2rpx 8rpx rgba(30, 95, 168, 0.1);
+}
+
+.form-hint {
+  font-size: 22rpx;
+  color: #6b7280;
+  margin-top: -8rpx;
+  margin-bottom: 16rpx;
+  padding: 10rpx 14rpx;
+  background: #f0f7ff;
+  border-left: 4rpx solid #1e5fa8;
+  border-radius: 4rpx;
+  line-height: 1.5;
+}

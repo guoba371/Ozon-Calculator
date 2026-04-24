@@ -1,0 +1,47 @@
+{
+  "name": "Ozon利润计算器",
+  "appid": "",
+  "description": "Ozon 跨境商家利润计算器 SaaS 工具",
+  "versionName": "1.0.0",
+  "versionCode": "100",
+  "transformPx": false,
+  "app-plus": {
+    "usingComponents": true,
+    "nvueStyleCompiler": "uni-app",
+    "compilerVersion": 3,
+    "splashscreen": {
+      "alwaysShowBeforeRender": true,
+      "waiting": true,
+      "autoclose": true,
+      "delay": 0
+    },
+    "modules": {},
+    "distribute": {
+      "android": {
+        "permissions": []
+      },
+      "ios": {},
+      "sdkConfigs": {}
+    }
+  },
+  "quickapp": {},
+  "mp-weixin": {
+    "appid": "",
+    "setting": {
+      "urlCheck": false,
+      "es6": true,
+      "postcss": true,
+      "minified": true
+    },
+    "usingComponents": true
+  },
+  "h5": {
+    "title": "Ozon 跨境利润计算器",
+    "router": {
+      "mode": "hash",
+      "base": "./"
+    },
+    "publicPath": "./"
+  },
+  "vueVersion": "3"
+}

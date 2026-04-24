@@ -1,0 +1,14 @@
+.grid-2 {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.field {
+  width: calc(50% - 8rpx);
+  margin-bottom: 16rpx;
+}
+
+.mode-row {
+  margin-bottom: 0;
+}

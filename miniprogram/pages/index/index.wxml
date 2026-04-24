@@ -1,0 +1,163 @@
+<view class="page">
+  <view class="card">
+    <view class="card-title">Ozon Merchant SaaS</view>
+    <view class="card-heading">移动端利润定价工具</view>
+    <view class="mode-row">
+      <view class="mode-btn {{input.salesMode === 'rFBS' ? 'active' : ''}}" data-mode="rFBS" bindtap="handleModeTap">rFBS</view>
+      <view class="mode-btn {{input.salesMode === 'FBP' ? 'active' : ''}}" data-mode="FBP" bindtap="handleModeTap">FBP</view>
+    </view>
+    <button class="action-btn" bindtap="saveRecord">保存当前记录</button>
+  </view>
+
+  <view class="card">
+    <view class="card-title">商品与销售信息</view>
+    <view class="grid-2">
+      <view class="field">
+        <text class="field-label">商品名称</text>
+        <input class="input" value="{{input.productName}}" data-field="productName" bindinput="handleTextInput" placeholder="请输入商品名称" />
+      </view>
+      <view class="field">
+        <text class="field-label">货本（¥）</text>
+        <input class="input" type="digit" value="{{input.cost}}" data-field="cost" bindinput="handleTextInput" />
+      </view>
+      <view class="field">
+        <text class="field-label">实际重量（kg）</text>
+        <input class="input" type="digit" value="{{input.weight}}" data-field="weight" bindinput="handleTextInput" />
+      </view>
+      <view class="field">
+        <text class="field-label">长（cm）</text>
+        <input class="input" type="digit" value="{{input.length}}" data-field="length" bindinput="handleTextInput" />
+      </view>
+      <view class="field">
+        <text class="field-label">宽（cm）</text>
+        <input class="input" type="digit" value="{{input.width}}" data-field="width" bindinput="handleTextInput" />
+      </view>
+      <view class="field">
+        <text class="field-label">高（cm）</text>
+        <input class="input" type="digit" value="{{input.height}}" data-field="height" bindinput="handleTextInput" />
+      </view>
+      <view class="field">
+        <text class="field-label">目标市场</text>
+        <picker mode="selector" range="{{destinations}}" range-key="label" bindchange="handleDestinationChange">
+          <view class="picker">{{destinationLabel}}</view>
+        </picker>
+      </view>
+      <view class="field">
+        <text class="field-label">货币</text>
+        <picker mode="selector" range="{{currencies}}" range-key="label" bindchange="handleCurrencyChange">
+          <view class="picker">{{currencyLabel}}</view>
+        </picker>
+      </view>
+      <view class="field">
+        <text class="field-label">外币售价</text>
+        <input class="input" type="digit" value="{{input.sellingPriceFX}}" data-field="sellingPriceFX" bindinput="handleTextInput" />
+      </view>
+      <view class="field">
+        <text class="field-label">汇率</text>
+        <input class="input" type="digit" value="{{input.exchangeRate}}" data-field="exchangeRate" bindinput="handleTextInput" />
+      </view>
+      <view class="field">
+        <text class="field-label">货值（RUB）</text>
+        <input class="input" type="digit" value="{{input.goodsValueRUB}}" data-field="goodsValueRUB" bindinput="handleTextInput" />
+      </view>
+      <view class="field">
+        <text class="field-label">运费分摊率（%）</text>
+        <input class="input" type="digit" value="{{input.shippingShareRate}}" data-field="shippingShareRate" bindinput="handleTextInput" />
+      </view>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="card-title">费用配置</view>
+    <view class="grid-2">
+      <view class="field">
+        <text class="field-label">佣金参考</text>
+        <picker mode="selector" range="{{presets}}" range-key="label" bindchange="handlePresetChange">
+          <view class="picker">{{presetLabel}}</view>
+        </picker>
+      </view>
+      <view class="field">
+        <text class="field-label">佣金模式</text>
+        <view class="mode-row">
+          <view class="mode-btn {{input.commissionInputMode === 'rate' ? 'active' : ''}}" data-mode="rate" bindtap="handleCommissionModeChange">佣金率</view>
+          <view class="mode-btn {{input.commissionInputMode === 'amount' ? 'active' : ''}}" data-mode="amount" bindtap="handleCommissionModeChange">佣金额</view>
+        </view>
+      </view>
+      <view class="field" wx:if="{{input.commissionInputMode === 'rate'}}">
+        <text class="field-label">佣金率（%）</text>
+        <input class="input" type="digit" value="{{input.commissionRate}}" data-field="commissionRate" bindinput="handleTextInput" />
+      </view>
+      <view class="field" wx:if="{{input.commissionInputMode === 'amount'}}">
+        <text class="field-label">佣金金额（¥）</text>
+        <input class="input" type="digit" value="{{input.commissionAmount}}" data-field="commissionAmount" bindinput="handleTextInput" />
+      </view>
+      <view class="field">
+        <text class="field-label">广告模式</text>
+        <view class="mode-row">
+          <view class="mode-btn {{input.advertisingMode === 'fixed' ? 'active' : ''}}" data-mode="fixed" bindtap="handleAdvertisingModeChange">固定金额</view>
+          <view class="mode-btn {{input.advertisingMode === 'percent' ? 'active' : ''}}" data-mode="percent" bindtap="handleAdvertisingModeChange">售价占比</view>
+        </view>
+      </view>
+      <view class="field">
+        <text class="field-label">广告费</text>
+        <input class="input" type="digit" value="{{input.advertisingValue}}" data-field="advertisingValue" bindinput="handleTextInput" />
+      </view>
+      <view class="field">
+        <text class="field-label">操作费（¥）</text>
+        <input class="input" type="digit" value="{{input.operationFee}}" data-field="operationFee" bindinput="handleTextInput" />
+      </view>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="card-title">开始计算</view>
+    <view class="analysis-note">参数确认后手动发起一次计算，并跳转到结果区。</view>
+    <button class="action-btn" bindtap="startCalculate">开始计算</button>
+  </view>
+
+  <view class="card" id="result-section">
+    <view class="card-title">货物分析</view>
+    <view class="analysis-grid">
+      <view class="analysis-item" wx:for="{{analysisCards}}" wx:key="label">
+        <view class="analysis-label">{{item.label}}</view>
+        <view class="analysis-value">{{item.value}}</view>
+        <view class="analysis-note">{{item.note}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="card" wx:if="{{selectedPlan}}">
+    <view class="card-title">当前优选方案</view>
+    <view class="card-heading">{{selectedPlan.carrier}} / {{selectedPlan.speed}}</view>
+    <view class="summary-profit {{selectedPlan.profit >= 0 ? 'positive' : 'negative'}}">¥{{selectedPlan.profitText}}</view>
+    <view class="summary-meta">
+      利润率：{{selectedPlan.profitRateText}}%
+      \n运费：¥{{selectedPlan.shippingCostText}}
+      \n总成本：¥{{selectedPlan.totalCostText}}
+      \n产品线：{{selectedPlan.product}}
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="card-title">物流方案</view>
+    <view class="plan-list" wx:if="{{result && result.plans.length}}">
+      <view class="plan-item {{selectedPlanKey === item.planKey || (!selectedPlanKey && index === 0) ? 'active' : ''}}" wx:for="{{result.plans}}" wx:key="planKey" data-key="{{item.planKey}}" bindtap="handlePlanTap">
+        <view class="plan-top">
+          <view>
+            <view class="plan-name">{{item.carrier}} / {{item.speed}}</view>
+            <view class="analysis-note">{{item.product}} · {{item.transitDays}}</view>
+          </view>
+          <view class="{{item.profit >= 0 ? 'positive' : 'negative'}}">¥{{item.profitText}}</view>
+        </view>
+        <view class="plan-tags">
+          <view class="tag {{tag.type}}" wx:for="{{item.tags}}" wx:for-item="tag" wx:key="label">{{tag.label}}</view>
+        </view>
+        <view class="plan-bottom">
+          <view class="analysis-note">运费 ¥{{item.shippingCostText}}</view>
+          <view class="analysis-note">利润率 {{item.profitRateText}}%</view>
+        </view>
+      </view>
+    </view>
+    <view class="analysis-note" wx:else>当前参数下暂无可用物流方案。</view>
+  </view>
+</view>

@@ -1,0 +1,35 @@
+{
+  "pages": [
+    {
+      "path": "pages/index/index",
+      "style": {
+        "navigationBarTitleText": "Ozon 利润计算器",
+        "navigationBarBackgroundColor": "#1E5FA8",
+        "navigationBarTextStyle": "white",
+        "enablePullDownRefresh": false
+      }
+    },
+    {
+      "path": "pages/history/history",
+      "style": {
+        "navigationBarTitleText": "计算历史",
+        "navigationBarBackgroundColor": "#1E5FA8",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/admin/admin",
+      "style": {
+        "navigationBarTitleText": "物流费率维护",
+        "navigationBarBackgroundColor": "#1E5FA8",
+        "navigationBarTextStyle": "white"
+      }
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "white",
+    "navigationBarTitleText": "Ozon 利润计算器",
+    "navigationBarBackgroundColor": "#1E5FA8",
+    "backgroundColor": "#F5F7FA"
+  }
+}

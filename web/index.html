@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ozon 利润计算器</title>
+    <meta
+      name="description"
+      content="面向 Ozon 跨境商家的利润定价 SaaS 工具，支持物流比价、利润分析、历史记录与分享。"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Ozon Merchant Intelligence</p>
+          <h1>给 Ozon 商家用的利润定价驾驶舱</h1>
+          <p class="hero-text">
+            自动判断重抛货、匹配物流报价、对比多种方案利润，让 Web 端和小程序端都能快速用于选品与定价。
+          </p>
+          <div class="hero-meta">
+            <span>实时联动</span>
+            <span>rFBS / FBP</span>
+            <span>本地保存</span>
+            <span>可分享链接</span>
+          </div>
+        </div>
+        <div class="hero-panel">
+          <div class="hero-panel-title">数据说明</div>
+          <ul id="assumption-list" class="signal-list"></ul>
+        </div>
+      </header>
+
+      <main class="app-grid">
+        <section class="panel input-panel">
+          <div class="panel-header">
+            <div>
+              <p class="panel-kicker">输入区</p>
+              <h2>利润参数</h2>
+            </div>
+            <button id="clear-btn" class="ghost-btn" type="button">清空</button>
+          </div>
+
+          <form id="calculator-form" class="form-stack">
+            <div class="mode-toggle" id="sales-mode-toggle"></div>
+
+            <div class="section-block">
+              <div class="section-title-row">
+                <h3>商品信息</h3>
+                <span class="section-hint">自动计算体积重与计费重</span>
+              </div>
+              <div class="field-grid">
+                <label class="field full">
+                  <span>商品名称</span>
+                  <input name="productName" type="text" placeholder="如：三合一儿童滑梯" />
+                </label>
+                <label class="field">
+                  <span>货本（¥）</span>
+                  <input name="cost" type="number" min="0" step="0.01" />
+                </label>
+                <label class="field">
+                  <span>实际重量（kg）</span>
+                  <input name="weight" type="number" min="0" step="0.001" />
+                </label>
+                <label class="field">
+                  <span>长（cm）</span>
+                  <input name="length" type="number" min="0" step="0.1" />
+                </label>
+                <label class="field">
+                  <span>宽（cm）</span>
+                  <input name="width" type="number" min="0" step="0.1" />
+                </label>
+                <label class="field">
+                  <span>高（cm）</span>
+                  <input name="height" type="number" min="0" step="0.1" />
+                </label>
+              </div>
+            </div>
+
+            <div class="section-block">
+              <div class="section-title-row">
+                <h3>销售信息</h3>
+                <span class="section-hint">支持卢布 / 美元 / 欧元</span>
+              </div>
+              <div class="field-grid">
+                <label class="field">
+                  <span>目标市场</span>
+                  <select name="destination" id="destination-select"></select>
+                </label>
+                <label class="field">
+                  <span>货币</span>
+                  <select name="currency" id="currency-select"></select>
+                </label>
+                <label class="field">
+                  <span>外币售价</span>
+                  <input name="sellingPriceFX" type="number" min="0" step="0.01" />
+                </label>
+                <label class="field">
+                  <span>汇率</span>
+                  <input name="exchangeRate" type="number" min="0" step="0.0001" />
+                </label>
+                <label class="field">
+                  <span>货值（RUB）</span>
+                  <input name="goodsValueRUB" type="number" min="0" step="1" />
+                </label>
+                <label class="field">
+                  <span>运费分摊率（%）</span>
+                  <input name="shippingShareRate" type="number" min="0" max="100" step="0.1" />
+                </label>
+              </div>
+            </div>
+
+            <div class="section-block">
+              <div class="section-title-row">
+                <h3>费用配置</h3>
+                <span class="section-hint">佣金支持参考值与手动覆盖</span>
+              </div>
+              <div class="field-grid">
+                <label class="field">
+                  <span>佣金参考</span>
+                  <select name="commissionPreset" id="commission-preset"></select>
+                </label>
+                <label class="field">
+                  <span>佣金输入方式</span>
+                  <select name="commissionInputMode" id="commission-input-mode">
+                    <option value="rate">按佣金率</option>
+                    <option value="amount">按佣金金额</option>
+                  </select>
+                </label>
+                <label class="field" data-role="commission-rate">
+                  <span>佣金率（%）</span>
+                  <input name="commissionRate" type="number" min="0" step="0.1" />
+                </label>
+                <label class="field" data-role="commission-amount">
+                  <span>佣金金额（¥）</span>
+                  <input name="commissionAmount" type="number" min="0" step="0.01" />
+                </label>
+                <label class="field">
+                  <span>广告费模式</span>
+                  <select name="advertisingMode">
+                    <option value="fixed">固定金额</option>
+                    <option value="percent">售价占比</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span>广告费</span>
+                  <input name="advertisingValue" type="number" min="0" step="0.01" />
+                </label>
+                <label class="field">
+                  <span>操作费（¥）</span>
+                  <input name="operationFee" type="number" min="0" step="0.01" />
+                </label>
+              </div>
+            </div>
+
+            <div class="calc-cta">
+              <div class="calc-cta-copy">
+                <strong>参数确认后手动发起计算</strong>
+                <span>会按当前输入重算，并滚动到结果区。</span>
+              </div>
+              <button id="calculate-btn" class="solid-btn calc-btn" type="button">开始计算</button>
+            </div>
+          </form>
+        </section>
+
+        <section id="result-section" class="results-column">
+          <div class="insight-grid">
+            <article class="panel summary-card">
+              <div class="panel-header compact">
+                <div>
+                  <p class="panel-kicker">货物分析</p>
+                  <h2>实时判断</h2>
+                </div>
+              </div>
+              <div id="analysis-cards" class="analysis-grid"></div>
+            </article>
+
+            <article class="panel summary-card">
+              <div class="panel-header compact">
+                <div>
+                  <p class="panel-kicker">利润概览</p>
+                  <h2>当前优选方案</h2>
+                </div>
+              </div>
+              <div class="summary-main">
+                <div class="ring-wrap">
+                  <div id="cost-ring" class="cost-ring"></div>
+                </div>
+                <div id="summary-metrics" class="summary-metrics"></div>
+              </div>
+            </article>
+          </div>
+
+          <section class="panel table-panel">
+            <div class="panel-header">
+              <div>
+                <p class="panel-kicker">物流比价</p>
+                <h2>可用方案排行</h2>
+              </div>
+              <div id="plan-count" class="panel-note"></div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>物流商</th>
+                    <th>产品线</th>
+                    <th>时效</th>
+                    <th>运费</th>
+                    <th>总成本</th>
+                    <th>利润</th>
+                    <th>利润率</th>
+                  </tr>
+                </thead>
+                <tbody id="plans-body"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="panel history-panel">
+            <div class="panel-header">
+              <div>
+                <p class="panel-kicker">历史记录</p>
+                <h2>本地保存与导出</h2>
+              </div>
+              <div class="action-row">
+                <button id="save-btn" class="solid-btn" type="button">保存记录</button>
+                <button id="share-btn" class="ghost-btn" type="button">复制分享链接</button>
+                <button id="export-btn" class="ghost-btn" type="button">导出 CSV</button>
+              </div>
+            </div>
+            <div id="history-list" class="history-list"></div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <template id="history-item-template">
+      <button class="history-item" type="button">
+        <span class="history-title"></span>
+        <span class="history-meta"></span>
+      </button>
+    </template>
+
+    <script src="../shared/calculator.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>

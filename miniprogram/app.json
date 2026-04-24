@@ -1,0 +1,13 @@
+{
+  "pages": [
+    "pages/index/index"
+  ],
+  "window": {
+    "navigationBarTitleText": "Ozon 利润计算器",
+    "navigationBarBackgroundColor": "#f3f7fb",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#f3f7fb"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}
