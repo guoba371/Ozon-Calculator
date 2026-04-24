@@ -94,6 +94,7 @@ import LogisticsTable from '../../components/LogisticsTable.vue';
 import ProfitSummary from '../../components/ProfitSummary.vue';
 import { useCalculator } from '../../composables/useCalculator.js';
 import { appendHistory, generateId } from '../../utils/storage.js';
+import { applyTargetPricingToInput } from '../../utils/profit.js';
 
 const { form, result, reset, refreshRates } = useCalculator();
 
@@ -116,13 +117,21 @@ const selectedPlan = computed(() => {
   );
 });
 
+function getPlanKey(plan) {
+  return plan ? plan.carrierCode + plan.speed : '';
+}
+
 function onSelectPlan(plan) {
-  selectedKey.value = plan.carrierCode + plan.speed;
+  selectedKey.value = getPlanKey(plan);
 }
 
 function onStartCalculate() {
   refreshRates();
-  selectedKey.value = '';
+  if (form.targetProfitRate === null || form.targetProfitRate === undefined || form.targetProfitRate === '') {
+    selectedKey.value = '';
+  } else if (!selectedKey.value) {
+    selectedKey.value = getPlanKey(selectedPlan.value);
+  }
   uni.pageScrollTo({
     selector: '#result-section',
     duration: 300,
@@ -208,6 +217,37 @@ watch(
   () => {
     if (speedFilter.value) speedFilter.value = '';
   }
+);
+
+watch(
+  () => [form.targetProfitRate, result.value.plans.length, selectedKey.value],
+  () => {
+    if (form.targetProfitRate === null || form.targetProfitRate === undefined || form.targetProfitRate === '') {
+      return;
+    }
+    if (!selectedKey.value) {
+      selectedKey.value = getPlanKey(selectedPlan.value);
+    }
+  },
+  { immediate: true }
+);
+
+watch(
+  () => [
+    form.targetProfitRate,
+    getPlanKey(selectedPlan.value),
+    selectedPlan.value?.targetPricing?.requiredSellingFX,
+    selectedPlan.value?.targetPricing?.feasible,
+  ],
+  () => {
+    if (form.targetProfitRate === null || form.targetProfitRate === undefined || form.targetProfitRate === '') {
+      return;
+    }
+    if (selectedPlan.value) {
+      applyTargetPricingToInput(form, selectedPlan.value);
+    }
+  },
+  { immediate: true }
 );
 
 onShow(() => {
