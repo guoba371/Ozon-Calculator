@@ -57,6 +57,10 @@
         <input class="input" type="digit" value="{{input.exchangeRate}}" data-field="exchangeRate" bindinput="handleTextInput" />
       </view>
       <view class="field">
+        <text class="field-label">目标利润率（%）</text>
+        <input class="input" type="digit" value="{{input.targetProfitRate}}" data-field="targetProfitRate" bindinput="handleTextInput" />
+      </view>
+      <view class="field">
         <text class="field-label">货值（RUB）</text>
         <input class="input" type="digit" value="{{input.goodsValueRUB}}" data-field="goodsValueRUB" bindinput="handleTextInput" />
       </view>
@@ -135,6 +139,9 @@
       \n运费：¥{{selectedPlan.shippingCostText}}
       \n总成本：¥{{selectedPlan.totalCostText}}
       \n产品线：{{selectedPlan.product}}
+      <block wx:if="{{selectedPlan.targetPricingText}}">
+        \n{{selectedPlan.targetPricingText}}
+      </block>
     </view>
   </view>
 
@@ -156,6 +163,7 @@
           <view class="analysis-note">运费 ¥{{item.shippingCostText}}</view>
           <view class="analysis-note">利润率 {{item.profitRateText}}%</view>
         </view>
+        <view class="analysis-note" wx:if="{{item.targetPricingText}}">{{item.targetPricingText}}</view>
       </view>
     </view>
     <view class="analysis-note" wx:else>当前参数下暂无可用物流方案。</view>
