@@ -48,7 +48,7 @@ async function main() {
   assert(r.cargo.type === 'light', '货型 = 抛货（体积重 > 实重）');
   assert(r.cargo.band?.code === 'Standard', '重量区间 = 标准件（2~5kg）');
 
-  // 售价 = 3000 * 0.076 = 228 元
+  // 销售额 = 3000 * 0.076 = 228 元
   assert(Math.abs(r.sellingCNY - 228) < 0.01, `售价 ¥${r.sellingCNY} ≈ 228`);
 
   // 应有多个物流方案
@@ -62,6 +62,18 @@ async function main() {
   assert(
     Math.abs(celPlan.shippingCost - 167.44) < 0.01,
     `CEL Big Standard 运费 = ¥167.44，实际 ${celPlan.shippingCost}`
+  );
+  assert(
+    Math.abs(celPlan.totalCost - 241.44) < 0.01,
+    `新口径总成本 = 货本 62 + 物流 167.44 + 操作 12 = 241.44，实际 ${celPlan.totalCost}`
+  );
+  assert(
+    Math.abs(celPlan.profit - (-47.64)) < 0.01,
+    `新口径利润 = 228 - 34.2 - 241.44 = -47.64，实际 ${celPlan.profit}`
+  );
+  assert(
+    Math.abs(celPlan.profitRate - (-19.73)) < 0.02,
+    `新口径利润率 = -47.64 / 241.44 ≈ -19.73%，实际 ${celPlan.profitRate}`
   );
 
   // 应有标签
@@ -264,18 +276,18 @@ async function main() {
   );
   assert(targetPlan?.targetPricing?.feasible, '目标利润率反推售价可用');
   assert(
-    Math.abs(targetPlan.targetPricing.requiredSellingCNY - 371.45) < 0.01,
-    `目标利润率 20% 时所需净售价 ≈ ¥371.45，实际 ${targetPlan?.targetPricing?.requiredSellingCNY}`
+    Math.abs(targetPlan.targetPricing.requiredSellingCNY - 340.86) < 0.01,
+    `目标利润率 20% 时所需销售额 ≈ ¥340.86，实际 ${targetPlan?.targetPricing?.requiredSellingCNY}`
   );
   assert(
-    Math.abs(targetPlan.targetPricing.requiredSellingFX - 4887.45) < 0.02,
-    `目标利润率 20% 时所需卢布售价 ≈ 4887.45，实际 ${targetPlan?.targetPricing?.requiredSellingFX}`
+    Math.abs(targetPlan.targetPricing.requiredSellingFX - 4484.95) < 0.02,
+    `目标利润率 20% 时所需卢布售价 ≈ 4484.95，实际 ${targetPlan?.targetPricing?.requiredSellingFX}`
   );
   const targetInput = { ...sample, targetProfitRate: 20, sellingPriceFX: 3000 };
   assert(applyTargetPricingToInput(targetInput, targetPlan), '可将目标售价回填到输入');
   assert(
-    Math.abs(targetInput.sellingPriceFX - 4887.45) < 0.02,
-    `回填后的售价 ≈ 4887.45，实际 ${targetInput.sellingPriceFX}`
+    Math.abs(targetInput.sellingPriceFX - 4484.95) < 0.02,
+    `回填后的售价 ≈ 4484.95，实际 ${targetInput.sellingPriceFX}`
   );
   assert(
     Math.abs(calcAutoGoodsValueRUB({ cost: 76, currency: 'RUB', exchangeRate: 0.076 }) - 1000) < 0.01,
