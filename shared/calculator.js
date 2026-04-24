@@ -327,6 +327,7 @@
     advertisingValue: 0,
     operationFee: 12,
     goodsValueRUB: 3000,
+    goodsValueCustomized: false,
     destination: "RU"
   };
 
@@ -460,6 +461,15 @@
     return round(price * rate * (1 - shareRate / 100), 2);
   }
 
+  function computeAutoGoodsValueRUB(input) {
+    var cost = toNumber(input.cost);
+    var rubToCnyRate = getRubToCnyRate(input || {});
+    if (cost <= 0 || rubToCnyRate <= 0) {
+      return null;
+    }
+    return round(cost / rubToCnyRate, 2);
+  }
+
   function computeAdvertisingFee(input, sellingPriceCNY) {
     var mode = input.advertisingMode || "fixed";
     var value = toNumber(input.advertisingValue);
@@ -524,11 +534,15 @@
     var targetRate = toNumber(input.targetProfitRate) / 100;
     var exchangeRate = toNumber(input.exchangeRate);
     var shareRate = Math.min(Math.max(toNumber(input.shippingShareRate), 0), 100) / 100;
+    var advertisingMode = input.advertisingMode || "fixed";
+    var advertisingRate = advertisingMode === "percent" ? toNumber(input.advertisingValue) / 100 : 0;
     var fixedBase =
       summary.cost +
       context.shippingCost +
-      summary.advertisingFee +
       summary.operationFee;
+    var invalidReason = advertisingRate > 0
+      ? "佣金率、广告费率与目标利润率之和过高，无法反推售价"
+      : "佣金率与目标利润率之和过高，无法反推售价";
 
     if (exchangeRate <= 0) {
       return { feasible: false, reason: "汇率需大于 0" };
@@ -538,25 +552,39 @@
       return { feasible: false, reason: "运费分摊率需小于 100%" };
     }
 
+    if (advertisingMode !== "percent") {
+      fixedBase += summary.advertisingFee;
+    }
+
     var requiredSellingCNY = 0;
     var requiredCommission = 0;
+    var requiredAdvertising = 0;
 
     if ((input.commissionInputMode || "rate") === "amount") {
       requiredCommission = round(toNumber(input.commissionAmount), 2);
-      var denominatorAmount = 1 - targetRate;
+      var denominatorAmount = 1 - advertisingRate - targetRate;
       if (denominatorAmount <= 0) {
-        return { feasible: false, reason: "目标利润率过高，无法反推售价" };
+        return {
+          feasible: false,
+          reason: advertisingRate > 0
+            ? "广告费率与目标利润率之和过高，无法反推售价"
+            : "目标利润率过高，无法反推售价"
+        };
       }
       requiredSellingCNY = (fixedBase + requiredCommission) / denominatorAmount;
     } else {
       var commissionRate = toNumber(input.commissionRate) / 100;
-      var denominatorRate = 1 - commissionRate - targetRate;
+      var denominatorRate = 1 - commissionRate - advertisingRate - targetRate;
       if (denominatorRate <= 0) {
-        return { feasible: false, reason: "佣金率与目标利润率之和过高，无法反推售价" };
+        return { feasible: false, reason: invalidReason };
       }
       requiredSellingCNY = fixedBase / denominatorRate;
       requiredCommission = requiredSellingCNY * commissionRate;
     }
+
+    requiredAdvertising = advertisingRate > 0
+      ? requiredSellingCNY * advertisingRate
+      : summary.advertisingFee;
 
     var requiredRawSellingCNY = requiredSellingCNY / (1 - shareRate);
     var requiredSellingFX = requiredRawSellingCNY / exchangeRate;
@@ -567,8 +595,28 @@
       requiredSellingCNY: round(requiredSellingCNY, 2),
       requiredRawSellingCNY: round(requiredRawSellingCNY, 2),
       requiredSellingFX: round(requiredSellingFX, 2),
-      requiredCommission: round(requiredCommission, 2)
+      requiredCommission: round(requiredCommission, 2),
+      requiredAdvertising: round(requiredAdvertising, 2)
     };
+  }
+
+  function applyTargetPricingToInput(input, plan) {
+    var targetPricing = plan && plan.targetPricing;
+    if (!targetPricing || targetPricing.feasible === false) {
+      return false;
+    }
+
+    var nextPrice = round(toNumber(targetPricing.requiredSellingFX), 2);
+    if (!isFiniteNumber(nextPrice) || nextPrice <= 0) {
+      return false;
+    }
+
+    if (Math.abs(toNumber(input.sellingPriceFX) - nextPrice) < 0.01) {
+      return false;
+    }
+
+    input.sellingPriceFX = nextPrice;
+    return true;
   }
 
   function getRubToCnyRate(input) {
@@ -941,6 +989,8 @@
     UNSUPPORTED_CARRIERS: UNSUPPORTED_CARRIERS,
     getDefaultInput: getDefaultInput,
     getCommissionRateByPreset: getCommissionRateByPreset,
+    computeAutoGoodsValueRUB: computeAutoGoodsValueRUB,
+    applyTargetPricingToInput: applyTargetPricingToInput,
     calculate: calculate,
     serializeShareState: serializeShareState,
     deserializeShareState: deserializeShareState,
@@ -948,7 +998,9 @@
       round: round,
       computeVolumeWeight: computeVolumeWeight,
       classifyWeightRange: classifyWeightRange,
-      determineProductLine: determineProductLine
+      determineProductLine: determineProductLine,
+      computeAutoGoodsValueRUB: computeAutoGoodsValueRUB,
+      applyTargetPricingToInput: applyTargetPricingToInput
     }
   };
 });
