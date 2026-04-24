@@ -1,6 +1,10 @@
 // 核心计算逻辑冒烟测试
 // 运行：node tests/smoke.mjs
-import { calcAll } from '../src/utils/profit.js';
+import {
+  calcAll,
+  calcAutoGoodsValueRUB,
+  applyTargetPricingToInput,
+} from '../src/utils/profit.js';
 import { nextTick } from 'vue';
 import { useCalculator } from '../src/composables/useCalculator.js';
 
@@ -123,19 +127,19 @@ async function main() {
     `CEL 覆盖费率生效，实际 ${celOverride?.shippingCost}`
   );
 
-  // 测试 7：RUB 货值应持续自动同步，手动锁定后不再覆盖
+  // 测试 7：货值默认按货本折算，手动锁定后不再覆盖
   const calc = useCalculator();
-  calc.form.sellingPriceFX = 1000;
+  calc.form.cost = 76;
   await nextTick();
-  assert(calc.form.goodsValueRUB === 1000, 'RUB 货值首次随售价同步');
+  assert(calc.form.goodsValueRUB === 1000, '货值首次按货本折算同步');
 
-  calc.form.sellingPriceFX = 1200;
+  calc.form.cost = 91.2;
   await nextTick();
-  assert(calc.form.goodsValueRUB === 1200, 'RUB 货值随售价持续同步');
+  assert(calc.form.goodsValueRUB === 1200, '货值随货本持续同步');
 
   calc.form.goodsValueRUB = 1500;
   calc.form.goodsValueCustomized = true;
-  calc.form.sellingPriceFX = 1800;
+  calc.form.cost = 136.8;
   await nextTick();
   assert(calc.form.goodsValueRUB === 1500, '手动锁定后货值不再被自动覆盖');
 
@@ -266,6 +270,16 @@ async function main() {
   assert(
     Math.abs(targetPlan.targetPricing.requiredSellingFX - 4887.45) < 0.02,
     `目标利润率 20% 时所需卢布售价 ≈ 4887.45，实际 ${targetPlan?.targetPricing?.requiredSellingFX}`
+  );
+  const targetInput = { ...sample, targetProfitRate: 20, sellingPriceFX: 3000 };
+  assert(applyTargetPricingToInput(targetInput, targetPlan), '可将目标售价回填到输入');
+  assert(
+    Math.abs(targetInput.sellingPriceFX - 4887.45) < 0.02,
+    `回填后的售价 ≈ 4887.45，实际 ${targetInput.sellingPriceFX}`
+  );
+  assert(
+    Math.abs(calcAutoGoodsValueRUB({ cost: 76, currency: 'RUB', exchangeRate: 0.076 }) - 1000) < 0.01,
+    '货本 76 元按 0.076 汇率折算为 1000 卢布'
   );
 
   console.log('\n🎉 所有冒烟测试通过');
