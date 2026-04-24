@@ -13,6 +13,7 @@
           type="digit"
           :value="form.sellingPriceFX"
           @input="form.sellingPriceFX = toNum($event)"
+          :disabled="form.targetProfitRate !== null"
           placeholder="如 3000"
         />
         <picker
@@ -61,7 +62,7 @@
     </view>
 
     <view v-if="form.targetProfitRate !== null" class="form-hint">
-      已开启目标利润率反推，系统会为每个物流方案计算所需售价。
+      已开启目标利润率反推，当前选中的物流方案会自动回填外币售价。
     </view>
 
     <view class="form-row">
@@ -81,7 +82,7 @@
     <view class="form-row">
       <text class="label">
         货值（卢布）
-        <text class="label-hint">用于物流档位匹配</text>
+        <text class="label-hint">默认按货本折算，用于物流档位匹配</text>
       </text>
       <view class="input-suffix">
         <input
@@ -95,23 +96,20 @@
       </view>
     </view>
 
-    <view
-      v-if="form.currency === 'RUB'"
-      class="form-hint action-row"
-    >
+    <view class="form-hint action-row">
       <text>
         {{
           form.goodsValueCustomized
             ? '当前货值已手动锁定'
-            : '当前货值随卢布售价自动同步'
+            : '当前货值按货本自动折算'
         }}
       </text>
       <text
         v-if="form.goodsValueCustomized"
         class="hint-action"
-        @click="useSellingPriceAsGoodsValue"
+        @click="useAutoGoodsValue"
       >
-        恢复自动同步
+        恢复按货本自动同步
       </text>
     </view>
   </view>
@@ -120,6 +118,7 @@
 <script setup>
 import { computed } from 'vue';
 import { CURRENCIES, DESTINATIONS } from '../data/commissions.js';
+import { calcAutoGoodsValueRUB } from '../utils/profit.js';
 
 const props = defineProps({
   form: { type: Object, required: true },
@@ -145,9 +144,9 @@ function onGoodsValueInput(e) {
   props.form.goodsValueCustomized = value !== null;
 }
 
-function useSellingPriceAsGoodsValue() {
+function useAutoGoodsValue() {
   props.form.goodsValueCustomized = false;
-  props.form.goodsValueRUB = props.form.sellingPriceFX || null;
+  props.form.goodsValueRUB = calcAutoGoodsValueRUB(props.form);
 }
 
 function toNum(e) {
