@@ -101,6 +101,34 @@ export function calcAll(input, options = {}) {
   };
 }
 
+export function calcAutoGoodsValueRUB(input) {
+  const cost = Number(input?.cost) || 0;
+  const rubToCnyRate = getRubToCnyRate(input || {});
+  if (cost <= 0 || rubToCnyRate <= 0) {
+    return null;
+  }
+  return round2(cost / rubToCnyRate);
+}
+
+export function applyTargetPricingToInput(input, plan) {
+  const targetPricing = plan?.targetPricing;
+  if (!targetPricing || targetPricing.feasible === false) {
+    return false;
+  }
+
+  const nextPrice = round2(Number(targetPricing.requiredSellingFX) || 0);
+  if (!Number.isFinite(nextPrice) || nextPrice <= 0) {
+    return false;
+  }
+
+  if (Math.abs((Number(input.sellingPriceFX) || 0) - nextPrice) < 0.01) {
+    return false;
+  }
+
+  input.sellingPriceFX = nextPrice;
+  return true;
+}
+
 /**
  * 给排名最优的方案贴标签
  */
