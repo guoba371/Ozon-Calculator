@@ -2,7 +2,7 @@
  * 利润计算核心
  *
  * 当前口径：
- *   成本（元）   = 货本 + 操作费 + 物流费
+ *   成本（元）   = 货本 + 物流费
  *   销售额（元） = 外币售价 × 汇率
  *   利润（元）   = 销售额 − 佣金 − 成本
  *   利润率      = 利润 ÷ 成本 × 100%
@@ -44,7 +44,6 @@ export function calcAll(input, options = {}) {
   const fixed = {
     cost: Number(input.cost) || 0,
     commission: round2(commissionCNY),
-    operation: Number(input.operationFee) || 0,
   };
 
   // 枚举全部物流方案
@@ -60,8 +59,7 @@ export function calcAll(input, options = {}) {
   const plans = quotes.map((q) => {
     const totalCost =
       fixed.cost +
-      q.shippingCost +
-      fixed.operation;
+      q.shippingCost;
     const profit = sellingCNY - fixed.commission - totalCost;
     const profitRate = totalCost > 0 ? (profit / totalCost) * 100 : 0;
     const targetPricing = calcTargetPricing({
@@ -75,7 +73,6 @@ export function calcAll(input, options = {}) {
         cost: fixed.cost,
         shipping: q.shippingCost,
         commission: fixed.commission,
-        operation: fixed.operation,
       },
       totalCost: round2(totalCost),
       profit: round2(profit),
@@ -195,8 +192,7 @@ function calcTargetPricing({ shippingCost, input, fixed }) {
   const exchangeRate = Number(input.exchangeRate) || 0;
   const fixedBase =
     (fixed.cost || 0) +
-    (shippingCost || 0) +
-    (fixed.operation || 0);
+    (shippingCost || 0);
   const targetProfit = fixedBase * targetRate;
 
   if (exchangeRate <= 0) {
