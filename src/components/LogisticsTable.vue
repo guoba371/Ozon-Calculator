@@ -92,7 +92,7 @@
           <text v-if="p.targetPricing.feasible !== false">
             目标利润率 {{ percent(p.targetPricing.targetProfitRate) }} 时，建议售价
             {{ currency }} {{ money(p.targetPricing.requiredSellingFX) }}
-            （约 ¥{{ money(p.targetPricing.requiredRawSellingCNY) }}）
+            （约 ¥{{ money(p.targetPricing.requiredSellingCNY) }}）
           </text>
           <text v-else>
             无法反推售价：{{ p.targetPricing.reason }}
