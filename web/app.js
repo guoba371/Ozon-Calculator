@@ -291,8 +291,7 @@
     var parts = [
       { name: '货本', value: summary.cost, color: '#1e5fa8' },
       { name: '物流费', value: plan.shippingCost, color: '#7fc8ff' },
-      { name: '平台佣金', value: summary.commissionFee, color: '#8cd7a7' },
-      { name: '操作费', value: summary.operationFee, color: '#dee8f3' }
+      { name: '平台佣金', value: summary.commissionFee, color: '#8cd7a7' }
     ]
     var total = parts.reduce(function (sum, part) {
       return sum + part.value
