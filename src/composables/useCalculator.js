@@ -17,6 +17,7 @@ export function createDefaultForm() {
     height: null,
 
     sellingPriceFX: null,
+    targetProfitRate: null,
     currency: 'RUB',
     exchangeRate: 0.076,
     destination: 'RU',
