@@ -16,6 +16,16 @@
     </view>
 
     <view class="form-row">
+      <text class="label">商品链接</text>
+      <input
+        class="input"
+        type="text"
+        v-model="form.productLink"
+        placeholder="选填，可粘贴 Ozon 或采购链接"
+      />
+    </view>
+
+    <view class="form-row">
       <text class="label">货本 <text class="required">*</text></text>
       <view class="input-suffix">
         <input

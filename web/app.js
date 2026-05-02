@@ -31,6 +31,10 @@
   var clearButton = document.getElementById('clear-btn')
   var calculateButton = document.getElementById('calculate-btn')
   var historyTemplate = document.getElementById('history-item-template')
+  var planContextMenu = document.getElementById('plan-context-menu')
+  var contextSavePlanButton = document.getElementById('context-save-plan')
+  var toast = document.getElementById('toast')
+  var toastTimer = null
 
   function formatMoney(value) {
     return '¥' + Number(value || 0).toFixed(2)
@@ -51,6 +55,15 @@
 
   function buildPlanKey(plan) {
     return [plan.carrier, plan.product, plan.speed].join('|')
+  }
+
+  function findPlanByKey(planKey) {
+    if (!state.result || !state.result.plans) {
+      return null
+    }
+    return state.result.plans.find(function (plan) {
+      return buildPlanKey(plan) === planKey
+    }) || null
   }
 
   function loadDraft() {
@@ -84,6 +97,39 @@
 
   function saveHistory(entries) {
     localStorage.setItem(STORAGE_KEYS.history, JSON.stringify(entries.slice(0, 18)))
+  }
+
+  function savePlanToHistory(plan) {
+    var selectedPlan = plan || getSelectedPlan()
+    var entries = loadHistory()
+    var entry = {
+      id: 'calc-' + Date.now(),
+      title: state.input.productName || '未命名商品',
+      timestampLabel: new Date().toLocaleString('zh-CN', { hour12: false }),
+      destinationLabel: calculator.DESTINATIONS[state.input.destination].label,
+      bestPlanLabel: selectedPlan ? selectedPlan.carrier + ' / ' + selectedPlan.speed + ' / ' + formatMoney(selectedPlan.profit) : '暂无方案',
+      selectedPlanKey: selectedPlan ? buildPlanKey(selectedPlan) : state.selectedPlanKey,
+      input: Object.assign({}, state.input),
+      plan: selectedPlan
+    }
+    entries.unshift(entry)
+    saveHistory(entries)
+    renderHistory()
+    return entry
+  }
+
+  function showToast(message) {
+    if (!toast) {
+      return
+    }
+    window.clearTimeout(toastTimer)
+    toast.textContent = message
+    toast.classList.add('show')
+    toast.setAttribute('aria-hidden', 'false')
+    toastTimer = window.setTimeout(function () {
+      toast.classList.remove('show')
+      toast.setAttribute('aria-hidden', 'true')
+    }, 3200)
   }
 
   function populateSelect(select, items, labelKey, valueKey) {
@@ -171,7 +217,25 @@
     })
 
     var nextInput = Object.assign({}, state.input, data)
-    ;['cost', 'weight', 'length', 'width', 'height', 'sellingPriceFX', 'exchangeRate', 'shippingShareRate', 'commissionRate', 'commissionAmount', 'advertisingValue', 'operationFee', 'goodsValueRUB'].forEach(function (key) {
+    ;[
+      'cost',
+      'weight',
+      'length',
+      'width',
+      'height',
+      'sellingPriceFX',
+      'exchangeRate',
+      'shippingShareRate',
+      'commissionRate',
+      'commissionAmount',
+      'advertisingValue',
+      'operationFee',
+      'labelFeeCNY',
+      'celLastMileRUB',
+      'returnRate',
+      'withdrawalFeeRate',
+      'goodsValueRUB'
+    ].forEach(function (key) {
       nextInput[key] = Number(nextInput[key] || 0)
     })
     nextInput.targetProfitRate =
@@ -191,6 +255,36 @@
     if (sellingPriceInput) {
       sellingPriceInput.disabled = isTargetProfitEnabled()
     }
+    updateFieldFeedback()
+  }
+
+  function setFieldMessage(element, message) {
+    if (!element || !element.parentElement) {
+      return
+    }
+    var messageNode = element.parentElement.querySelector('.field-message')
+    if (!messageNode) {
+      messageNode = document.createElement('small')
+      messageNode.className = 'field-message'
+      element.parentElement.appendChild(messageNode)
+    }
+    messageNode.textContent = message || ''
+    element.parentElement.classList.toggle('has-message', Boolean(message))
+  }
+
+  function updateFieldFeedback() {
+    if (!form || !form.elements) {
+      return
+    }
+    var sellingPriceInput = form.elements.namedItem('sellingPriceFX')
+    var exchangeRateInput = form.elements.namedItem('exchangeRate')
+    var targetProfitInput = form.elements.namedItem('targetProfitRate')
+    setFieldMessage(
+      sellingPriceInput,
+      isTargetProfitEnabled() ? '已由目标利润率自动反推，清空目标利润率后可手动编辑。' : ''
+    )
+    setFieldMessage(exchangeRateInput, Number(exchangeRateInput && exchangeRateInput.value) <= 0 ? '汇率需大于 0。' : '')
+    setFieldMessage(targetProfitInput, Number(targetProfitInput && targetProfitInput.value) < 0 ? '目标利润率不能为负数。' : '')
   }
 
   function syncTargetSellingPrice() {
@@ -288,11 +382,9 @@
       return
     }
 
-    var parts = [
-      { name: '货本', value: summary.cost, color: '#1e5fa8' },
-      { name: '物流费', value: plan.shippingCost, color: '#7fc8ff' },
-      { name: '平台佣金', value: summary.commissionFee, color: '#8cd7a7' }
-    ]
+    var parts = (plan.expenseItems || []).filter(function (item) {
+      return Number(item.value) > 0
+    })
     var total = parts.reduce(function (sum, part) {
       return sum + part.value
     }, 0) || 1
@@ -309,12 +401,13 @@
     var metrics = [
       { name: '选中方案', value: plan.carrier + ' / ' + plan.speed },
       { name: '产品线', value: plan.product },
-      { name: '物流费', value: formatMoney(plan.shippingCost) },
       { name: '总成本', value: formatMoney(plan.totalCost) },
       { name: '利润', value: formatMoney(plan.profit), tone: plan.profit >= 0 ? 'value-positive' : 'value-negative' },
-      { name: '利润率', value: formatPercent(plan.profitRate), tone: plan.profitRate >= 0 ? 'value-positive' : 'value-negative' },
-      { name: '平台佣金', value: formatMoney(summary.commissionFee) }
+      { name: '利润率', value: formatPercent(plan.profitRate), tone: plan.profitRate >= 0 ? 'value-positive' : 'value-negative' }
     ]
+    ;(plan.expenseItems || []).forEach(function (item) {
+      metrics.push({ name: item.label, value: formatMoney(item.value) })
+    })
 
     if (plan.targetPricing) {
       metrics.push(
@@ -351,13 +444,15 @@
 
     if (!state.result.plans.length) {
       plansBody.innerHTML =
-        '<tr><td colspan="7"><div class="empty-state">没有匹配到有效报价，请调整货值、重量或目的地。</div></td></tr>'
+        '<tr><td colspan="8"><div class="empty-state">没有匹配到有效报价，请调整货值、重量或目的地。</div></td></tr>'
       return
     }
 
     plansBody.innerHTML = state.result.plans
       .map(function (plan) {
-        var activeClass = buildPlanKey(plan) === buildPlanKey(getSelectedPlan()) ? 'active' : ''
+        var planKey = buildPlanKey(plan)
+        var isActive = planKey === buildPlanKey(getSelectedPlan())
+        var activeClass = isActive ? 'active' : ''
         var tags = plan.tags
           .map(function (tag) {
             return '<span class="tag ' + escapeHtml(tag.type) + '">' + escapeHtml(tag.label) + '</span>'
@@ -378,9 +473,11 @@
           '<tr class="' +
           activeClass +
           '" data-plan-key="' +
-          escapeHtml(buildPlanKey(plan)) +
+          escapeHtml(planKey) +
+          '" aria-selected="' +
+          (isActive ? 'true' : 'false') +
           '">' +
-          '<td><div class="table-main"><strong>' +
+          '<td data-label="物流商"><div class="table-main"><strong>' +
           escapeHtml(plan.carrier) +
           '</strong><div class="tag-row">' +
           tags +
@@ -388,28 +485,31 @@
           warning +
           targetPricing +
           '</div></td>' +
-          '<td>' +
+          '<td data-label="产品线">' +
           escapeHtml(plan.product) +
           '</td>' +
-          '<td>' +
+          '<td data-label="时效">' +
           escapeHtml(plan.speed + ' / ' + plan.transitDays) +
           '</td>' +
-          '<td>' +
+          '<td data-label="运费">' +
           escapeHtml(formatMoney(plan.shippingCost)) +
           '</td>' +
-          '<td>' +
+          '<td data-label="总成本">' +
           escapeHtml(formatMoney(plan.totalCost)) +
           '</td>' +
-          '<td class="' +
+          '<td data-label="利润" class="' +
           (plan.profit >= 0 ? 'value-positive' : 'value-negative') +
           '">' +
           escapeHtml(formatMoney(plan.profit)) +
           '</td>' +
-          '<td class="' +
+          '<td data-label="利润率" class="' +
           (plan.profitRate >= 0 ? 'value-positive' : 'value-negative') +
           '">' +
           escapeHtml(formatPercent(plan.profitRate)) +
           '</td>' +
+          '<td data-label="操作" class="row-action-cell"><button class="row-save-btn" type="button" data-save-plan-key="' +
+          escapeHtml(planKey) +
+          '">保存</button></td>' +
           '</tr>'
         )
       })
@@ -429,9 +529,17 @@
     entries.forEach(function (entry) {
       var node = historyTemplate.content.firstElementChild.cloneNode(true)
       node.dataset.historyId = entry.id
+      var restoreButton = node.querySelector('.history-restore')
+      restoreButton.dataset.historyId = entry.id
+      node.querySelector('.history-delete').dataset.historyDeleteId = entry.id
       node.querySelector('.history-title').textContent = entry.title
       node.querySelector('.history-meta').textContent =
-        entry.timestampLabel + ' | ' + entry.destinationLabel + ' | ' + entry.bestPlanLabel
+        entry.timestampLabel +
+        ' | ' +
+        entry.destinationLabel +
+        ' | ' +
+        entry.bestPlanLabel +
+        (entry.input && entry.input.productLink ? ' | ' + entry.input.productLink : '')
       historyList.appendChild(node)
     })
   }
@@ -483,10 +591,18 @@
   }
 
   function handlePlanClick(event) {
+    var saveButton = event.target.closest('[data-save-plan-key]')
+    if (saveButton) {
+      event.stopPropagation()
+      saveVisiblePlan(saveButton.dataset.savePlanKey)
+      return
+    }
+
     var row = event.target.closest('[data-plan-key]')
     if (!row) {
       return
     }
+    hidePlanContextMenu()
     state.selectedPlanKey = row.dataset.planKey
     if (isTargetProfitEnabled()) {
       calculateAndRender()
@@ -496,7 +612,80 @@
     renderSummary()
   }
 
+  function saveVisiblePlan(planKey) {
+    var plan = findPlanByKey(planKey)
+    if (!plan) {
+      return
+    }
+    state.selectedPlanKey = planKey
+    savePlanToHistory(plan)
+    renderPlans()
+    renderSummary()
+    showToast('已保存该物流方案到本地历史记录。')
+  }
+
+  function positionPlanContextMenu(x, y) {
+    planContextMenu.style.left = '0px'
+    planContextMenu.style.top = '0px'
+    planContextMenu.classList.add('open')
+    planContextMenu.setAttribute('aria-hidden', 'false')
+
+    var menuRect = planContextMenu.getBoundingClientRect()
+    var nextLeft = Math.min(x, window.innerWidth - menuRect.width - 12)
+    var nextTop = Math.min(y, window.innerHeight - menuRect.height - 12)
+    planContextMenu.style.left = Math.max(12, nextLeft) + 'px'
+    planContextMenu.style.top = Math.max(12, nextTop) + 'px'
+  }
+
+  function hidePlanContextMenu() {
+    if (!planContextMenu) {
+      return
+    }
+    planContextMenu.classList.remove('open')
+    planContextMenu.setAttribute('aria-hidden', 'true')
+    delete planContextMenu.dataset.planKey
+  }
+
+  function handlePlanContextMenu(event) {
+    var row = event.target.closest('[data-plan-key]')
+    if (!row) {
+      hidePlanContextMenu()
+      return
+    }
+    event.preventDefault()
+    state.selectedPlanKey = row.dataset.planKey
+    renderPlans()
+    renderSummary()
+    planContextMenu.dataset.planKey = row.dataset.planKey
+    positionPlanContextMenu(event.clientX, event.clientY)
+  }
+
+  function handleContextSavePlan() {
+    var planKey = planContextMenu.dataset.planKey
+    var plan = findPlanByKey(planKey)
+    if (!plan) {
+      hidePlanContextMenu()
+      return
+    }
+    state.selectedPlanKey = planKey
+    saveVisiblePlan(planKey)
+    hidePlanContextMenu()
+  }
+
   function handleHistoryClick(event) {
+    var deleteButton = event.target.closest('[data-history-delete-id]')
+    if (deleteButton) {
+      var deleteId = deleteButton.dataset.historyDeleteId
+      if (!window.confirm('确定删除这条保存记录吗？')) {
+        return
+      }
+      saveHistory(loadHistory().filter(function (entry) {
+        return entry.id !== deleteId
+      }))
+      renderHistory()
+      return
+    }
+
     var item = event.target.closest('[data-history-id]')
     if (!item) {
       return
@@ -516,21 +705,8 @@
   }
 
   function handleSave() {
-    var bestPlan = getSelectedPlan()
-    var entries = loadHistory()
-    var entry = {
-      id: 'calc-' + Date.now(),
-      title: state.input.productName || '未命名商品',
-      timestampLabel: new Date().toLocaleString('zh-CN', { hour12: false }),
-      destinationLabel: calculator.DESTINATIONS[state.input.destination].label,
-      bestPlanLabel: bestPlan ? bestPlan.carrier + ' / ' + bestPlan.speed + ' / ' + formatMoney(bestPlan.profit) : '暂无方案',
-      selectedPlanKey: state.selectedPlanKey,
-      input: state.input
-    }
-    entries.unshift(entry)
-    saveHistory(entries)
-    renderHistory()
-    window.alert('已保存到本地历史记录。')
+    savePlanToHistory(getSelectedPlan())
+    showToast('已保存到本地历史记录。')
   }
 
   function handleShare() {
@@ -538,7 +714,7 @@
     var url = window.location.href.split('#')[0] + '#' + shareValue
     navigator.clipboard.writeText(url).then(
       function () {
-        window.alert('分享链接已复制。')
+        showToast('分享链接已复制。')
       },
       function () {
         window.prompt('复制下面的分享链接', url)
@@ -547,10 +723,11 @@
   }
 
   function buildCsvRowsFromCurrent() {
-    var header = ['商品名称', '销售模式', '市场', '物流商', '产品线', '速度', '时效', '运费', '总成本', '利润', '利润率']
+    var header = ['商品名称', '商品链接', '销售模式', '市场', '物流商', '产品线', '速度', '时效', '运费', '总成本', '利润', '利润率', '支出明细']
     var rows = state.result.plans.map(function (plan) {
       return [
         state.input.productName || '',
+        state.input.productLink || '',
         state.input.salesMode,
         calculator.DESTINATIONS[state.input.destination].label,
         plan.carrier,
@@ -560,27 +737,36 @@
         plan.shippingCost,
         plan.totalCost,
         plan.profit,
-        plan.profitRate + '%'
+        plan.profitRate + '%',
+        (plan.expenseItems || []).map(function (item) {
+          return item.label + ':' + formatMoney(item.value)
+        }).join('；')
       ]
     })
     return [header].concat(rows)
   }
 
   function buildCsvRowsFromHistory(entries) {
-    var header = ['时间', '商品名称', '市场', '售价货币', '售价', '汇率', '佣金率', '目标物流', '目标方案', '货本', '利润参考']
+    var header = ['时间', '商品名称', '商品链接', '市场', '售价货币', '售价', '汇率', '佣金率', '目标物流', '目标方案', '货本', '利润参考', '支出明细']
     var rows = entries.map(function (entry) {
+      var plan = entry.plan || {}
+      var input = entry.input || {}
       return [
         entry.timestampLabel,
         entry.title,
+        input.productLink || '',
         entry.destinationLabel,
-        entry.input.currency,
-        entry.input.sellingPriceFX,
-        entry.input.exchangeRate,
-        entry.input.commissionRate,
+        input.currency,
+        input.sellingPriceFX,
+        input.exchangeRate,
+        input.commissionRate,
         entry.bestPlanLabel.split(' / ')[0] || '',
         entry.bestPlanLabel,
-        entry.input.cost,
-        entry.bestPlanLabel
+        input.cost,
+        entry.bestPlanLabel,
+        (plan.expenseItems || []).map(function (item) {
+          return item.label + ':' + formatMoney(item.value)
+        }).join('；')
       ]
     })
     return [header].concat(rows)
@@ -637,12 +823,26 @@
     form.addEventListener('change', handleFormChange)
     salesModeToggle.addEventListener('click', handleModeClick)
     plansBody.addEventListener('click', handlePlanClick)
+    plansBody.addEventListener('contextmenu', handlePlanContextMenu)
     historyList.addEventListener('click', handleHistoryClick)
     saveButton.addEventListener('click', handleSave)
     shareButton.addEventListener('click', handleShare)
     exportButton.addEventListener('click', handleExport)
     clearButton.addEventListener('click', handleClear)
     calculateButton.addEventListener('click', handleCalculate)
+    contextSavePlanButton.addEventListener('click', handleContextSavePlan)
+    document.addEventListener('click', function (event) {
+      if (!event.target.closest('#plan-context-menu')) {
+        hidePlanContextMenu()
+      }
+    })
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape') {
+        hidePlanContextMenu()
+      }
+    })
+    window.addEventListener('scroll', hidePlanContextMenu, true)
+    window.addEventListener('resize', hidePlanContextMenu)
   }
 
   function initOptions() {

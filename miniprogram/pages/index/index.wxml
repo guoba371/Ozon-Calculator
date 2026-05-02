@@ -17,6 +17,10 @@
         <input class="input" value="{{input.productName}}" data-field="productName" bindinput="handleTextInput" placeholder="请输入商品名称" />
       </view>
       <view class="field">
+        <text class="field-label">商品链接</text>
+        <input class="input" value="{{input.productLink}}" data-field="productLink" bindinput="handleTextInput" placeholder="可填写商品链接" />
+      </view>
+      <view class="field">
         <text class="field-label">货本（¥）</text>
         <input class="input" type="digit" value="{{input.cost}}" data-field="cost" bindinput="handleTextInput" />
       </view>
@@ -110,6 +114,22 @@
         <text class="field-label">操作费（¥）</text>
         <input class="input" type="digit" value="{{input.operationFee}}" data-field="operationFee" bindinput="handleTextInput" />
       </view>
+      <view class="field">
+        <text class="field-label">贴标费（¥）</text>
+        <input class="input" type="digit" value="{{input.labelFeeCNY}}" data-field="labelFeeCNY" bindinput="handleTextInput" />
+      </view>
+      <view class="field">
+        <text class="field-label">CEL 尾程费（RUB）</text>
+        <input class="input" type="digit" value="{{input.celLastMileRUB}}" data-field="celLastMileRUB" bindinput="handleTextInput" />
+      </view>
+      <view class="field">
+        <text class="field-label">退货预留（%）</text>
+        <input class="input" type="digit" value="{{input.returnRate}}" data-field="returnRate" bindinput="handleTextInput" />
+      </view>
+      <view class="field">
+        <text class="field-label">提现手续费（%）</text>
+        <input class="input" type="digit" value="{{input.withdrawalFeeRate}}" data-field="withdrawalFeeRate" bindinput="handleTextInput" />
+      </view>
     </view>
   </view>
 
@@ -139,6 +159,7 @@
       \n运费：¥{{selectedPlan.shippingCostText}}
       \n总成本：¥{{selectedPlan.totalCostText}}
       \n产品线：{{selectedPlan.product}}
+      \n{{selectedPlan.expenseSummaryText}}
       <block wx:if="{{selectedPlan.targetPricingText}}">
         \n{{selectedPlan.targetPricingText}}
       </block>
@@ -148,7 +169,7 @@
   <view class="card">
     <view class="card-title">物流方案</view>
     <view class="plan-list" wx:if="{{result && result.plans.length}}">
-      <view class="plan-item {{selectedPlanKey === item.planKey || (!selectedPlanKey && index === 0) ? 'active' : ''}}" wx:for="{{result.plans}}" wx:key="planKey" data-key="{{item.planKey}}" bindtap="handlePlanTap">
+      <view class="plan-item {{selectedPlan && selectedPlan.planKey === item.planKey ? 'active' : ''}}" wx:for="{{result.plans}}" wx:key="planKey" data-key="{{item.planKey}}" bindtap="handlePlanTap">
         <view class="plan-top">
           <view>
             <view class="plan-name">{{item.carrier}} / {{item.speed}}</view>

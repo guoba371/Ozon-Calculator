@@ -26,13 +26,16 @@
               <text class="rec-name">{{ r.productName }}</text>
               <text class="rec-time">{{ formatDateTime(r.createdAt) }}</text>
             </view>
-            <view class="rec-del" @click.stop="onRemove(r.id)">✕</view>
+            <view class="rec-del" @click.stop="onRemove(r.id)">删除</view>
           </view>
 
           <view class="rec-meta">
             <text class="rec-tag">{{ r.plan.carrierName }} · {{ r.plan.speedLabel }}</text>
             <text class="rec-tag">{{ r.plan.transitDays }}</text>
             <text class="rec-tag">{{ r.form.salesMode }}</text>
+          </view>
+          <view v-if="r.form?.productLink" class="rec-link">
+            {{ r.form.productLink }}
           </view>
 
           <view class="rec-numbers">
@@ -55,6 +58,17 @@
               <text :class="['rn-val', profitCls(r.plan.profit)]">
                 {{ percent(r.plan.profitRate) }}
               </text>
+            </view>
+          </view>
+
+          <view class="expense-list">
+            <view
+              v-for="item in expenseItems(r)"
+              :key="item.key"
+              class="expense-row"
+            >
+              <text class="expense-name">{{ item.label }}</text>
+              <text class="expense-value">¥{{ money(item.value) }}</text>
             </view>
           </view>
         </view>
@@ -82,6 +96,16 @@ onMounted(refresh);
 
 function profitCls(v) {
   return v >= 0 ? 'positive' : 'negative';
+}
+
+function expenseItems(record) {
+  if (record?.plan?.expenseItems?.length) return record.plan.expenseItems;
+  const b = record?.plan?.breakdown || {};
+  return [
+    { key: 'cost', label: '货本', value: b.cost || record?.form?.cost || 0 },
+    { key: 'shipping', label: '物流费', value: b.shipping || record?.plan?.shippingCost || 0 },
+    { key: 'commission', label: '平台佣金', value: b.commission || 0 },
+  ];
 }
 
 function onRemove(id) {
@@ -113,6 +137,7 @@ function onExportAll() {
   const header = [
     '时间',
     '商品',
+    '商品链接',
     '售价(元)',
     '物流商',
     '速度',
@@ -121,10 +146,12 @@ function onExportAll() {
     '总成本',
     '利润',
     '利润率%',
+    '支出明细',
   ];
   const rows = list.value.map((r) => [
     formatDateTime(r.createdAt),
     r.productName,
+    r.form?.productLink || '',
     r.sellingCNY,
     r.plan.carrierName,
     r.plan.speedLabel,
@@ -133,6 +160,7 @@ function onExportAll() {
     r.plan.totalCost,
     r.plan.profit,
     r.plan.profitRate,
+    expenseItems(r).map((item) => `${item.label}:${money(item.value)}`).join('；'),
   ]);
   const csv = [header, ...rows]
     .map((row) =>
@@ -277,16 +305,20 @@ function goBack() {
 }
 
 .rec-del {
-  width: 48rpx;
+  min-width: 76rpx;
   height: 48rpx;
+  padding: 0 18rpx;
+  border-radius: 999rpx;
+  background: #fef2f2;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #9ca3af;
-  font-size: 28rpx;
+  color: #ef4444;
+  font-size: 22rpx;
+  font-weight: 600;
 
   &:active {
-    color: #ef4444;
+    opacity: 0.85;
   }
 }
 
@@ -294,6 +326,13 @@ function goBack() {
   display: flex;
   gap: 8rpx;
   flex-wrap: wrap;
+  margin-bottom: 14rpx;
+}
+
+.rec-link {
+  font-size: 22rpx;
+  color: #1e5fa8;
+  word-break: break-all;
   margin-bottom: 14rpx;
 }
 
@@ -312,6 +351,28 @@ function goBack() {
   padding: 14rpx;
   background: #f9fafb;
   border-radius: 12rpx;
+}
+
+.expense-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8rpx 16rpx;
+  margin-top: 14rpx;
+  padding-top: 14rpx;
+  border-top: 1rpx dashed #e5e7eb;
+}
+
+.expense-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12rpx;
+  font-size: 22rpx;
+  color: #4b5563;
+}
+
+.expense-value {
+  color: #1f2937;
+  font-variant-numeric: tabular-nums;
 }
 
 .rn-item {

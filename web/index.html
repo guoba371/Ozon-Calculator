@@ -39,10 +39,11 @@
               <p class="panel-kicker">输入区</p>
               <h2>利润参数</h2>
             </div>
-            <button id="clear-btn" class="ghost-btn" type="button">清空</button>
+            <button id="clear-btn" class="ghost-btn compact-action" type="button">清空</button>
           </div>
 
           <form id="calculator-form" class="form-stack">
+            <div class="section-label">销售模式</div>
             <div class="mode-toggle" id="sales-mode-toggle"></div>
 
             <div class="section-block">
@@ -54,6 +55,10 @@
                 <label class="field full">
                   <span>商品名称</span>
                   <input name="productName" type="text" placeholder="如：三合一儿童滑梯" />
+                </label>
+                <label class="field full">
+                  <span>商品链接</span>
+                  <input name="productLink" type="url" placeholder="可填写 Ozon 或采购链接" />
                 </label>
                 <label class="field">
                   <span>货本（¥）</span>
@@ -155,6 +160,22 @@
                   <span>操作费（¥）</span>
                   <input name="operationFee" type="number" min="0" step="0.01" />
                 </label>
+                <label class="field">
+                  <span>贴标费（¥）</span>
+                  <input name="labelFeeCNY" type="number" min="0" step="0.01" />
+                </label>
+                <label class="field">
+                  <span>CEL 尾程费（RUB）</span>
+                  <input name="celLastMileRUB" type="number" min="0" step="0.01" />
+                </label>
+                <label class="field">
+                  <span>退货预留（%）</span>
+                  <input name="returnRate" type="number" min="0" step="0.1" />
+                </label>
+                <label class="field">
+                  <span>提现手续费（%）</span>
+                  <input name="withdrawalFeeRate" type="number" min="0" step="0.1" />
+                </label>
               </div>
             </div>
 
@@ -230,6 +251,7 @@
                     <th>总成本</th>
                     <th>利润</th>
                     <th>利润率</th>
+                    <th>操作</th>
                   </tr>
                 </thead>
                 <tbody id="plans-body"></tbody>
@@ -255,11 +277,20 @@
       </main>
     </div>
 
+    <div id="plan-context-menu" class="context-menu" role="menu" aria-hidden="true">
+      <button id="context-save-plan" type="button" role="menuitem">保存该方案</button>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite" aria-hidden="true"></div>
+
     <template id="history-item-template">
-      <button class="history-item" type="button">
-        <span class="history-title"></span>
-        <span class="history-meta"></span>
-      </button>
+      <article class="history-item">
+        <button class="history-restore" type="button">
+          <span class="history-title"></span>
+          <span class="history-meta"></span>
+        </button>
+        <button class="history-delete" type="button">删除</button>
+      </article>
     </template>
 
     <script src="../shared/calculator.js"></script>

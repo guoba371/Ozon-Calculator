@@ -10,6 +10,7 @@ import {
 export function createDefaultForm() {
   return {
     productName: '',
+    productLink: '',
     cost: null,
     weight: null,
     length: null,
@@ -33,6 +34,10 @@ export function createDefaultForm() {
 
     advertisingFee: 0,
     operationFee: 12,
+    labelFeeCNY: 3,
+    celLastMileRUB: 50,
+    returnRate: 5,
+    withdrawalFeeRate: 1.2,
     freightShareRate: 0,
   };
 }
