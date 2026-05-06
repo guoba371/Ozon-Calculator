@@ -1,4 +1,5 @@
 node_modules/
+.npm-cache/
 dist/
 .DS_Store
 .unpackage/
@@ -6,5 +7,6 @@ unpackage/
 *.log
 .env
 .env.local
+vendor/awesome-design-md/
 .idea/
 .vscode/

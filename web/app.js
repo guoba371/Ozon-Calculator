@@ -35,6 +35,37 @@
   var contextSavePlanButton = document.getElementById('context-save-plan')
   var toast = document.getElementById('toast')
   var toastTimer = null
+  var themeToggle = document.getElementById('theme-toggle')
+  var themeToggleText = themeToggle ? themeToggle.querySelector('.theme-toggle-text') : null
+
+  function applyTheme(theme) {
+    var nextTheme = theme === 'dark' ? 'dark' : 'light'
+    document.documentElement.dataset.theme = nextTheme
+    if (themeToggle) {
+      themeToggle.setAttribute('aria-pressed', String(nextTheme === 'dark'))
+      themeToggle.setAttribute('aria-label', nextTheme === 'dark' ? '切换浅色模式' : '切换深色模式')
+    }
+    if (themeToggleText) {
+      themeToggleText.textContent = nextTheme === 'dark' ? '日间' : '夜间'
+    }
+    try {
+      localStorage.setItem('ozon-calculator-theme', nextTheme)
+    } catch (error) {}
+  }
+
+  function initTheme() {
+    var stored = ''
+    try {
+      stored = localStorage.getItem('ozon-calculator-theme') || ''
+    } catch (error) {}
+    var preferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+    applyTheme(stored || preferred)
+    if (themeToggle) {
+      themeToggle.addEventListener('click', function () {
+        applyTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark')
+      })
+    }
+  }
 
   function formatMoney(value) {
     return '¥' + Number(value || 0).toFixed(2)
@@ -886,5 +917,6 @@
     calculateAndRender()
   }
 
+  initTheme()
   init()
 })()

@@ -111,7 +111,7 @@ function showLabel(v) {
 @import '../styles/form.scss';
 
 .summary-card {
-  background: linear-gradient(180deg, #ffffff 0%, #fafbfc 100%);
+  background: #ffffff;
 }
 
 .profit-display {
@@ -120,35 +120,36 @@ function showLabel(v) {
   align-items: center;
   padding: 32rpx 0;
   gap: 8rpx;
-  border-bottom: 1rpx dashed #e5e7eb;
+  border-bottom: 1rpx dashed rgba(14, 15, 12, 0.14);
   margin-bottom: 24rpx;
 }
 
 .pd-label {
   font-size: 24rpx;
-  color: #6b7280;
+  color: #868685;
+  font-weight: 650;
 }
 
 .pd-value {
-  font-size: 56rpx;
-  font-weight: 800;
+  font-size: 62rpx;
+  font-weight: 950;
   font-variant-numeric: tabular-nums;
   &.positive {
-    color: #22c55e;
+    color: #054d28;
   }
   &.negative {
-    color: #ef4444;
+    color: #d03238;
   }
 }
 
 .pd-rate {
   font-size: 26rpx;
-  font-weight: 600;
+  font-weight: 850;
   &.positive {
-    color: #22c55e;
+    color: #054d28;
   }
   &.negative {
-    color: #ef4444;
+    color: #d03238;
   }
 }
 
@@ -160,8 +161,8 @@ function showLabel(v) {
 
 .bd-title {
   font-size: 26rpx;
-  color: #4b5563;
-  font-weight: 600;
+  color: #454745;
+  font-weight: 850;
 }
 
 .bar-chart {
@@ -169,7 +170,7 @@ function showLabel(v) {
   height: 48rpx;
   border-radius: 24rpx;
   overflow: hidden;
-  background: #f3f4f6;
+  background: #eef1ea;
 }
 
 .bar-seg {
@@ -181,13 +182,13 @@ function showLabel(v) {
   transition: all 0.3s;
 
   &.cost {
-    background: #1e5fa8;
+    background: #0e0f0c;
   }
   &.shipping {
-    background: #3b7bc4;
+    background: #9fe870;
   }
   &.commission {
-    background: #f59e0b;
+    background: #ffc091;
   }
 }
 
@@ -212,11 +213,11 @@ function showLabel(v) {
   font-size: 26rpx;
 
   &.total {
-    border-top: 1rpx dashed #e5e7eb;
+    border-top: 1rpx dashed rgba(14, 15, 12, 0.14);
     padding-top: 12rpx;
     margin-top: 6rpx;
-    font-weight: 700;
-    color: #1f2937;
+    font-weight: 900;
+    color: #0e0f0c;
   }
 }
 
@@ -237,24 +238,24 @@ function showLabel(v) {
   border-radius: 4rpx;
 
   &.cost {
-    background: #1e5fa8;
+    background: #0e0f0c;
   }
   &.shipping {
-    background: #3b7bc4;
+    background: #9fe870;
   }
   &.commission {
-    background: #f59e0b;
+    background: #ffc091;
   }
 }
 
 .bd-name {
   flex: 1;
-  color: #4b5563;
+  color: #454745;
 }
 
 .bd-num {
   font-variant-numeric: tabular-nums;
-  font-weight: 500;
-  color: #1f2937;
+  font-weight: 750;
+  color: #0e0f0c;
 }
 </style>

@@ -8,6 +8,7 @@
     "dev:mp-weixin": "uni -p mp-weixin",
     "build:h5": "uni build",
     "build:mp-weixin": "uni build -p mp-weixin",
+    "serve:web": "node serve-static.mjs",
     "test": "node tests/smoke.mjs"
   },
   "dependencies": {

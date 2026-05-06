@@ -172,14 +172,15 @@ function profitCls(v) {
 .sf-item {
   flex-shrink: 0;
   font-size: 24rpx;
-  padding: 10rpx 24rpx;
+  padding: 12rpx 24rpx;
   border-radius: 100rpx;
-  background: #f3f4f6;
-  color: #6b7280;
+  background: rgba(22, 51, 0, 0.08);
+  color: #454745;
+  font-weight: 700;
 
   &.active {
-    background: #1e5fa8;
-    color: #fff;
+    background: #0e0f0c;
+    color: #9fe870;
   }
 }
 
@@ -190,17 +191,17 @@ function profitCls(v) {
 }
 
 .plan-row {
-  border: 2rpx solid #eef2f7;
-  border-radius: 16rpx;
-  padding: 20rpx;
-  background: #fafbfc;
+  border: 1rpx solid rgba(14, 15, 12, 0.1);
+  border-radius: 24rpx;
+  padding: 22rpx;
+  background: #fbfcf7;
   transition: all 0.15s;
   cursor: pointer;
 
   &.selected {
-    border-color: #1e5fa8;
-    background: #f0f7ff;
-    box-shadow: 0 4rpx 16rpx rgba(30, 95, 168, 0.1);
+    border-color: #9fe870;
+    background: #f6fde9;
+    box-shadow: 0 0 0 4rpx rgba(159, 232, 112, 0.22);
   }
 }
 
@@ -222,16 +223,17 @@ function profitCls(v) {
 
 .carrier-name {
   font-size: 30rpx;
-  font-weight: 700;
-  color: #1f2937;
+  font-weight: 900;
+  color: #0e0f0c;
 }
 
 .carrier-speed {
   font-size: 22rpx;
-  color: #1e5fa8;
-  background: #e0ecfa;
+  color: #163300;
+  background: #e2f6d5;
   padding: 4rpx 12rpx;
-  border-radius: 6rpx;
+  border-radius: 999rpx;
+  font-weight: 800;
 }
 
 .estimated {
@@ -256,13 +258,14 @@ function profitCls(v) {
   font-weight: 500;
 
   &.low {
-    background: #22c55e;
+    background: #054d28;
   }
   &.fast {
-    background: #3b82f6;
+    background: #0e0f0c;
   }
   &.val {
-    background: #f59e0b;
+    background: #9fe870;
+    color: #163300;
   }
 }
 
@@ -281,8 +284,9 @@ function profitCls(v) {
   grid-template-columns: repeat(4, 1fr);
   gap: 10rpx;
   padding: 16rpx;
-  background: #fff;
-  border-radius: 12rpx;
+  background: #ffffff;
+  border: 1rpx solid rgba(14, 15, 12, 0.08);
+  border-radius: 18rpx;
 }
 
 .num-item {
@@ -299,24 +303,25 @@ function profitCls(v) {
 
 .num-value {
   font-size: 26rpx;
-  font-weight: 600;
-  color: #1f2937;
+  font-weight: 850;
+  color: #0e0f0c;
   font-variant-numeric: tabular-nums;
 
   &.positive {
-    color: #22c55e;
+    color: #054d28;
   }
   &.negative {
-    color: #ef4444;
+    color: #d03238;
   }
 }
 
 .target-pricing {
   margin-top: 12rpx;
   padding: 12rpx 16rpx;
-  border-radius: 10rpx;
-  background: #eef6ff;
-  color: #1e5fa8;
+  border-radius: 18rpx;
+  background: #f1f8ec;
+  border: 1rpx solid rgba(159, 232, 112, 0.55);
+  color: #163300;
   font-size: 22rpx;
   line-height: 1.6;
 

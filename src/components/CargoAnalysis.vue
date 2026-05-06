@@ -67,12 +67,13 @@ function formatRange(min, max) {
 
 <style lang="scss" scoped>
 .analysis-card {
-  background: linear-gradient(135deg, #1e5fa8 0%, #3b7bc4 100%);
-  border-radius: 24rpx;
+  background: #0e0f0c;
+  border: 1rpx solid rgba(159, 232, 112, 0.24);
+  border-radius: 30rpx;
   padding: 32rpx;
   color: #ffffff;
   margin-bottom: 24rpx;
-  box-shadow: 0 8rpx 24rpx rgba(30, 95, 168, 0.2);
+  box-shadow: 0 20rpx 46rpx rgba(14, 15, 12, 0.16);
 }
 
 .analysis-header {
@@ -84,22 +85,23 @@ function formatRange(min, max) {
 
 .analysis-title {
   font-size: 30rpx;
-  font-weight: 600;
+  font-weight: 900;
 }
 
 .cargo-badge {
   font-size: 22rpx;
   padding: 6rpx 16rpx;
   border-radius: 100rpx;
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(10rpx);
-  font-weight: 500;
+  background: rgba(255, 255, 255, 0.1);
+  font-weight: 800;
 
   &.light {
-    background: rgba(245, 158, 11, 0.85);
+    background: #ffd11a;
+    color: #0e0f0c;
   }
   &.heavy {
-    background: rgba(34, 197, 94, 0.85);
+    background: #9fe870;
+    color: #163300;
   }
 }
 
@@ -107,8 +109,9 @@ function formatRange(min, max) {
   display: flex;
   align-items: stretch;
   padding: 20rpx 0;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 16rpx;
+  background: #181a16;
+  border: 1rpx solid rgba(255, 255, 255, 0.08);
+  border-radius: 22rpx;
   margin-bottom: 20rpx;
 }
 
@@ -123,7 +126,7 @@ function formatRange(min, max) {
 
 .metric-label {
   font-size: 22rpx;
-  opacity: 0.85;
+  color: #cbd3c4;
 }
 
 .metric-value {
@@ -134,7 +137,7 @@ function formatRange(min, max) {
 
 .metric.primary .metric-value {
   font-size: 32rpx;
-  color: #fff2c7;
+  color: #9fe870;
 }
 
 .divider {
@@ -156,7 +159,8 @@ function formatRange(min, max) {
 }
 
 .band-pill {
-  background: rgba(255, 255, 255, 0.22);
+  background: rgba(159, 232, 112, 0.14);
+  border: 1rpx solid rgba(159, 232, 112, 0.22);
   border-radius: 100rpx;
   padding: 8rpx 20rpx;
   font-size: 24rpx;
@@ -190,8 +194,8 @@ function formatRange(min, max) {
 
 .sp-value {
   font-size: 36rpx;
-  font-weight: 700;
-  color: #fff2c7;
+  font-weight: 900;
+  color: #9fe870;
   font-variant-numeric: tabular-nums;
 }
 </style>

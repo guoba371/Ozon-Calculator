@@ -4,7 +4,7 @@
       <!-- 顶部导航卡片 -->
       <view class="nav-bar">
         <view class="brand">
-          <text class="brand-icon">📊</text>
+          <text class="brand-icon">OZ</text>
           <view class="brand-text">
             <text class="brand-title">Ozon 利润计算器</text>
             <text class="brand-sub">跨境定价 · 物流比价 · 一键出结果</text>
@@ -261,26 +261,31 @@ onShow(() => {
 <style lang="scss" scoped>
 .page {
   min-height: 100vh;
-  background: #f5f7fa;
+  background:
+    radial-gradient(circle at top left, rgba(159, 232, 112, 0.28), transparent 34%),
+    linear-gradient(180deg, #fbfcf7 0%, #eef1ea 100%);
   padding-bottom: 140rpx;
+  color: #0e0f0c;
 }
 
 .container {
-  max-width: 1280rpx;
+  max-width: 1320rpx;
   margin: 0 auto;
-  padding: 24rpx 24rpx 40rpx;
+  padding: 26rpx 24rpx 44rpx;
 }
 
 .nav-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 24rpx 32rpx;
-  background: linear-gradient(135deg, #1e5fa8 0%, #144a85 100%);
-  border-radius: 24rpx;
+  gap: 24rpx;
+  padding: 24rpx 26rpx;
+  background: #0e0f0c;
+  border: 1rpx solid rgba(255, 255, 255, 0.08);
+  border-radius: 32rpx;
   margin-bottom: 24rpx;
   color: #ffffff;
-  box-shadow: 0 6rpx 20rpx rgba(30, 95, 168, 0.25);
+  box-shadow: 0 22rpx 50rpx rgba(14, 15, 12, 0.18);
 }
 
 .brand {
@@ -290,7 +295,17 @@ onShow(() => {
 }
 
 .brand-icon {
-  font-size: 56rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 68rpx;
+  height: 68rpx;
+  border-radius: 50%;
+  background: #9fe870;
+  color: #163300;
+  font-size: 24rpx;
+  font-weight: 900;
+  letter-spacing: 0;
 }
 
 .brand-text {
@@ -300,13 +315,14 @@ onShow(() => {
 }
 
 .brand-title {
-  font-size: 34rpx;
-  font-weight: 700;
+  font-size: 36rpx;
+  font-weight: 900;
+  letter-spacing: 0;
 }
 
 .brand-sub {
   font-size: 22rpx;
-  opacity: 0.85;
+  color: #cbd3c4;
 }
 
 .nav-actions {
@@ -315,14 +331,16 @@ onShow(() => {
 }
 
 .nav-btn {
-  padding: 12rpx 20rpx;
-  background: rgba(255, 255, 255, 0.18);
-  border-radius: 12rpx;
+  padding: 14rpx 22rpx;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1rpx solid rgba(255, 255, 255, 0.1);
+  border-radius: 999rpx;
   font-size: 24rpx;
-  backdrop-filter: blur(10rpx);
+  font-weight: 700;
 
   &:active {
-    background: rgba(255, 255, 255, 0.3);
+    transform: scale(0.96);
+    background: rgba(159, 232, 112, 0.16);
   }
 }
 
@@ -333,11 +351,11 @@ onShow(() => {
 }
 
 .calc-action-card {
-  padding: 28rpx;
-  border-radius: 24rpx;
-  background: linear-gradient(135deg, #eef5ff 0%, #ffffff 100%);
-  border: 1rpx solid rgba(30, 95, 168, 0.14);
-  box-shadow: 0 10rpx 24rpx rgba(30, 95, 168, 0.06);
+  padding: 30rpx;
+  border-radius: 30rpx;
+  background: #0e0f0c;
+  border: 1rpx solid rgba(159, 232, 112, 0.24);
+  box-shadow: 0 18rpx 42rpx rgba(14, 15, 12, 0.16);
 }
 
 .calc-action-note {
@@ -348,14 +366,14 @@ onShow(() => {
 }
 
 .calc-action-title {
-  font-size: 28rpx;
-  font-weight: 700;
-  color: #17324f;
+  font-size: 30rpx;
+  font-weight: 900;
+  color: #ffffff;
 }
 
 .calc-action-sub {
   font-size: 22rpx;
-  color: #6b7f95;
+  color: #cbd3c4;
 }
 
 .calc-action-btn {
@@ -363,15 +381,15 @@ onShow(() => {
   justify-content: center;
   align-items: center;
   padding: 24rpx 0;
-  border-radius: 18rpx;
-  background: linear-gradient(135deg, #1e5fa8 0%, #3b7bc4 100%);
-  color: #ffffff;
+  border-radius: 999rpx;
+  background: #9fe870;
+  color: #163300;
   font-size: 30rpx;
-  font-weight: 700;
-  box-shadow: 0 8rpx 18rpx rgba(30, 95, 168, 0.26);
+  font-weight: 900;
+  box-shadow: 0 14rpx 24rpx rgba(159, 232, 112, 0.24);
 
   &:active {
-    transform: scale(0.98);
+    transform: scale(0.96);
   }
 }
 
@@ -398,31 +416,32 @@ onShow(() => {
   gap: 16rpx;
   padding: 20rpx 24rpx;
   padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
-  background: #ffffff;
-  border-top: 1rpx solid #e5e7eb;
-  box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.04);
+  background: rgba(251, 252, 247, 0.94);
+  border-top: 1rpx solid rgba(14, 15, 12, 0.1);
+  box-shadow: 0 -10rpx 30rpx rgba(14, 15, 12, 0.08);
   z-index: 100;
+  backdrop-filter: blur(16rpx);
 }
 
 .bb-btn {
   flex: 1;
   text-align: center;
   padding: 22rpx 0;
-  border-radius: 16rpx;
+  border-radius: 999rpx;
   font-size: 28rpx;
-  font-weight: 600;
+  font-weight: 850;
   transition: all 0.15s;
 
   &.primary {
-    background: linear-gradient(135deg, #1e5fa8 0%, #3b7bc4 100%);
-    color: #ffffff;
-    box-shadow: 0 4rpx 12rpx rgba(30, 95, 168, 0.3);
+    background: #9fe870;
+    color: #163300;
+    box-shadow: 0 8rpx 20rpx rgba(159, 232, 112, 0.32);
     flex: 2;
   }
 
   &.secondary {
-    background: #f3f4f6;
-    color: #4b5563;
+    background: rgba(22, 51, 0, 0.08);
+    color: #0e0f0c;
   }
 
   &:active {
@@ -434,6 +453,6 @@ onShow(() => {
   margin-top: 40rpx;
   text-align: center;
   font-size: 22rpx;
-  color: #9ca3af;
+  color: #868685;
 }
 </style>
